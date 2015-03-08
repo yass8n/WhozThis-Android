@@ -4,6 +4,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,24 +12,37 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
 
+import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
 
 
 public class MainActivity extends ActionBarActivity {
+    public static Firebase firebase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //https://radiant-inferno-906.firebaseio.com   this is the URL where our data will be stored
         super.onCreate(savedInstanceState);
         Firebase.setAndroidContext(this);
-        Firebase myFirebaseRef = new Firebase("https://radiant-inferno-906.firebaseio.com/");
-        myFirebaseRef.child("message").setValue("Do you have data? You'll love Firebase.");
+        firebase = new Firebase("https://radiant-inferno-906.firebaseio.com/");
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, new PlaceholderFragment())
                     .commit();
         }
+        firebase.child("message").addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                Log.v(snapshot.getValue().toString(), "  <<<<<<<<");
+            }
+
+            @Override public void onCancelled(FirebaseError error) { }
+
+        });
     }
 
 
