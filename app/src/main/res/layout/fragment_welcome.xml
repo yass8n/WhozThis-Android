@@ -9,13 +9,13 @@
     <TextView android:text="@string/hello_world" android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
     <Button
-        android:layout_width="50dp"
+        android:layout_width="300dp"
         android:id="@+id/sign_up"
         android:text="sign_up"
         android:layout_height="100dp" />
 
     <Button
-        android:layout_width="50dp"
+        android:layout_width="300dp"
         android:id="@+id/sign_in"
         android:text="sign_in"
         android:layout_below="@+id/sign_up"

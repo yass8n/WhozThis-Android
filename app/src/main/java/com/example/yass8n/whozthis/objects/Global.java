@@ -8,6 +8,7 @@ import android.app.Application;
 import android.util.Log;
 
 public class Global extends Application {
+    public static final String AWS_URL = "http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/";
 
     public static Boolean empty(String string) {
         if (string == null || string.equals("") || string.equals("null"))

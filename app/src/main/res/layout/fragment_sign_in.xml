@@ -5,8 +5,18 @@
 
     <Button
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="50dp"
         android:id="@+id/sign_in"
         android:text="Sign in"/>
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Phone Number"
+        android:id="@+id/phone"/>
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Password"
+        android:id="@+id/password"/>
 
 </LinearLayout>

@@ -17,7 +17,7 @@ public class User {
         this.filename = filename;
         this.user_id = user_id;
     }
-    public String stripPhone(String phone){
+    static public String stripPhone(String phone){
         phone  = phone.replace(")", "");
         phone  = phone.replace("(", "");
         phone  = phone.replace(" ", "");

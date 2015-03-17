@@ -1,6 +1,8 @@
 package com.example.yass8n.whozthis.activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
@@ -14,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.example.yass8n.whozthis.R;
 import com.example.yass8n.whozthis.objects.Global;
@@ -68,7 +71,8 @@ public class MainActivity extends ActionBarActivity {
             @Override public void onCancelled(FirebaseError error) { }
 
         });
-        startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
+//        startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
+        checkUserLogin();
 
     }
 
@@ -94,7 +98,20 @@ public class MainActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
+    public boolean checkUserLogin(){
+        boolean result = true;
+        SharedPreferences user = getSharedPreferences("user", Context.MODE_PRIVATE);
+        if (user.contains("signed_in")) {
+            final String signed_in = user.getString("signed_in", null);
+            if (signed_in.equals("true")) {
+                result =  true;
+            }
+        } else {
+            startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
+            result =  false;
+        }
+        return result;
+    }
 
     /**
      * A placeholder fragment containing a simple view.
@@ -108,14 +125,14 @@ public class MainActivity extends ActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            Button sign_up = (Button) rootView.findViewById(R.id.sign_up);
-            sign_up.setOnClickListener(this);
+            Button api_call = (Button) rootView.findViewById(R.id.api_call);
+            api_call.setOnClickListener(this);
             return rootView;
         }
 
         @Override
         public void onClick(View v) {
-            if (v.getId() == R.id.sign_up){
+            if (v.getId() == R.id.api_call){
                 SignUpAPI task = new SignUpAPI();
                 task.execute();
             }
