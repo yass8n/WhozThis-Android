@@ -136,6 +136,8 @@ public class MainActivity extends ActionBarActivity {
                     HttpContext localContext = new BasicHttpContext();
 //                    HttpPost httpPost = new HttpPost("http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/v1/users/sign_up");
                     HttpPost httpPost = new HttpPost("http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/v1/conversations");
+//                    HttpPost httpPost = new HttpPost("http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/v1/users/friends");
+
                     httpPost.setHeader("Accept", "application/json");
                     httpPost.setHeader("Content-type", "application/json");
 
@@ -143,7 +145,8 @@ public class MainActivity extends ActionBarActivity {
 
                     StringBuilder sb = new StringBuilder();
 //                    httpPost.setEntity(new StringEntity("{\"user\":{\"password\":\"aa\",\"phone\":\"aa\",\"first_name\":\"aa\",\"last_name\":\"aa\"}}"));
-                    httpPost.setEntity(new StringEntity("{\"conversation\":{\"title\":\"hey\",\"user_id\":1}, \"phones\":[\"aa\"]}"));
+                    httpPost.setEntity(new StringEntity("{\"conversation\":{\"title\":\"hey\",\"user_id\":1}, \"phones\":[\"aa\", \"111\"]}"));
+//                    httpPost.setEntity(new StringEntity("{\"phones\":[\"a\"]}"));
 
 
                     HttpResponse response = httpClient.execute(httpPost, localContext);
