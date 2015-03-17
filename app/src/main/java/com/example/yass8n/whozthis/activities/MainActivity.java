@@ -1,5 +1,6 @@
 package com.example.yass8n.whozthis.activities;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
@@ -67,6 +68,8 @@ public class MainActivity extends ActionBarActivity {
             @Override public void onCancelled(FirebaseError error) { }
 
         });
+        startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
+
     }
 
 

@@ -1,0 +1,23 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="horizontal"
+    tools:context="com.example.yass8n.whozthis.activities.WelcomeActivity"
+    tools:ignore="MergeRootFrame"
+    android:id="@+id/container" >
+
+    <!--<fragment-->
+    <!--android:name="com.example.yass8n.whozthis.fragments.SignIn"-->
+    <!--android:id="@+id/sign_in_fragment"-->
+    <!--android:layout_weight="1"-->
+    <!--android:layout_width="0px"-->
+    <!--android:layout_height="match_parent"-->
+    <!--tools:layout="@layout/fragment_sign_in" />-->
+<!--<fragment-->
+    <!--android:name="com.example.yass8n.whozthis.fragments.SignUp"-->
+    <!--android:id="@+id/sign_up_fragment"-->
+    <!--android:layout_weight="2"-->
+    <!--android:layout_width="0px"-->
+    <!--android:layout_height="match_parent"-->
+    <!--tools:layout="@layout/fragment_sign_up" />-->
+</LinearLayout>
