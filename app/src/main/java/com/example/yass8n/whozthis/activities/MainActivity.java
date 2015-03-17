@@ -136,7 +136,6 @@ public class MainActivity extends ActionBarActivity {
                 SignUpAPI task = new SignUpAPI();
                 task.execute();
             }
-
         }
         public class SignUpAPI extends AsyncTask<String, Void, JSONObject> {
 
@@ -165,7 +164,7 @@ public class MainActivity extends ActionBarActivity {
 
                     StringBuilder sb = new StringBuilder();
 //                    httpPost.setEntity(new StringEntity("{\"user\":{\"password\":\"aa\",\"phone\":\"aa\",\"first_name\":\"aa\",\"last_name\":\"aa\"}}"));
-                    httpPost.setEntity(new StringEntity("{\"conversation\":{\"title\":\"hey\",\"user_id\":1}, \"phones\":[\"aa\", \"111\"]}"));
+                    httpPost.setEntity(new StringEntity("{\"conversation\":{\"title\":\"hey\",\"user_id\":1}, \"phones\":[\"aa\", \"2097402793\"]}"));
 //                    httpPost.setEntity(new StringEntity("{\"phones\":[\"a\"]}"));
 
 
