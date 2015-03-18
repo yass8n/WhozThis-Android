@@ -72,8 +72,8 @@ public class MainActivity extends ActionBarActivity {
             @Override public void onCancelled(FirebaseError error) { }
 
         });
-        startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
-//        checkUserLogin();
+//        startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
+        checkUserLogin();
 
     }
 
@@ -92,9 +92,11 @@ public class MainActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (id == R.id.sign_out) {
+            getSharedPreferences("user", Context.MODE_PRIVATE).edit().clear().commit();
+            startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
+        } else if (id == R.id.edit_profile){
+            Toast.makeText(this, "Editing Profile!", Toast.LENGTH_SHORT).show();
         }
 
         return super.onOptionsItemSelected(item);
