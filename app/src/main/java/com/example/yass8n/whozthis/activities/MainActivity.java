@@ -54,7 +54,7 @@ public class MainActivity extends ActionBarActivity {
         //https://radiant-inferno-906.firebaseio.com   this is the URL where our data will be stored
         super.onCreate(savedInstanceState);
         Firebase.setAndroidContext(this);
-        firebase = new Firebase(Global.FBASE_URL);
+        firebase = new Firebase("https://radiant-inferno-906.firebaseio.com/");
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -62,11 +62,11 @@ public class MainActivity extends ActionBarActivity {
                     .commit();
         }
 
-        firebase.child("message").addValueEventListener(new ValueEventListener() {
+        firebase.child("user_id").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
 //                Log.v(snapshot.getValue().toString(), "  <<<<<<<<");
-                Toast.makeText(MainActivity.this, snapshot.getValue().toString(), Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, "the value of user_id is " + snapshot.getValue().toString(), Toast.LENGTH_LONG).show();
             }
 
             @Override public void onCancelled(FirebaseError error) { }
@@ -134,7 +134,11 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public void onClick(View v) {
             if (v.getId() == R.id.api_call){
-                firebase.child("message").setValue("Do you saasdasdasd have data? You'll love Firebase.");
+//                firebase.child("user_id").setValue("5");
+                firebase = new Firebase("https://radiant-inferno-906.firebaseio.com/conversation/1");
+                firebase.child("first_maessage").setValue("Setting message.");
+
+
 
 //                SignUpAPI task = new SignUpAPI();
 //                task.execute();

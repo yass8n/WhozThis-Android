@@ -85,8 +85,8 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
         if (v.getId() == R.id.sign_up){
             if(Global.empty(p_num) || Global.empty(f_name) || Global.empty(l_name) || Global.empty(p_word)){
                 Toast.makeText(getActivity(), "Please fill in all the fields before proceeding", Toast.LENGTH_LONG).show();
-            } else if (!users_phone_number.equals(p_num)) {
-                Toast.makeText(getActivity(), "Sorry, you can only Sign up with your own phone number.", Toast.LENGTH_LONG).show();
+//            } else if (!users_phone_number.equals(p_num)) {
+//                Toast.makeText(getActivity(), "Sorry, you can only Sign up with your own phone number.", Toast.LENGTH_LONG).show();
             } else {
                 SignUpAPI task = new SignUpAPI();
                 task.execute();
