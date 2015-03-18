@@ -19,7 +19,9 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.yass8n.whozthis.R;
+import com.example.yass8n.whozthis.objects.Conversation;
 import com.example.yass8n.whozthis.objects.Global;
+import com.example.yass8n.whozthis.objects.User;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
@@ -29,11 +31,13 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,6 +45,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.StringBody;
@@ -48,6 +54,7 @@ import org.apache.http.entity.mime.content.StringBody;
 
 public class MainActivity extends ActionBarActivity {
     public static Firebase firebase;
+    public static ArrayList<Conversation> conversations_array = new ArrayList<Conversation>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,11 +149,15 @@ public class MainActivity extends ActionBarActivity {
 
 
 
-//                SignUpAPI task = new SignUpAPI();
+//                PostAPI task = new PostAPI();
 //                task.execute();
+
+                GetAPI task = new GetAPI();
+                task.execute();
             }
         }
-        public class SignUpAPI extends AsyncTask<String, Void, JSONObject> {
+
+        public class PostAPI extends AsyncTask<String, Void, JSONObject> {
 
             @Override
             protected void onPreExecute() {
@@ -163,7 +174,7 @@ public class MainActivity extends ActionBarActivity {
                     HttpClient httpClient = new DefaultHttpClient();
                     HttpContext localContext = new BasicHttpContext();
 //                    HttpPost httpPost = new HttpPost("http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/v1/users/sign_up");
-                    HttpPost httpPost = new HttpPost("http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/v1/conversations");
+                    HttpPost httpPost = new HttpPost("http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/v1/users/friends");
 //                    HttpPost httpPost = new HttpPost("http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/v1/users/friends");
 
                     httpPost.setHeader("Accept", "application/json");
@@ -173,8 +184,8 @@ public class MainActivity extends ActionBarActivity {
 
                     StringBuilder sb = new StringBuilder();
 //                    httpPost.setEntity(new StringEntity("{\"user\":{\"password\":\"aa\",\"phone\":\"aa\",\"first_name\":\"aa\",\"last_name\":\"aa\"}}"));
-                    httpPost.setEntity(new StringEntity("{\"conversation\":{\"title\":\"hey\",\"user_id\":1},\"phones\":[\"aa\",\"2097402793\"]}"));
-//                    httpPost.setEntity(new StringEntity("{\"phones\":[\"a\"]}"));
+//                    httpPost.setEntity(new StringEntity("{\"conversation\":{\"title\":\"hey\",\"user_id\":1},\"phones\":[\"aa\",\"2097402793\"]}"));
+                    httpPost.setEntity(new StringEntity("{\"phones\":[\"a\"]}"));
 
 
                     HttpResponse response = httpClient.execute(httpPost, localContext);
@@ -217,8 +228,114 @@ public class MainActivity extends ActionBarActivity {
 
             @Override
             protected void onPostExecute(JSONObject result) {
-                Global.log("Response >>>", result);
+                Toast.makeText(getActivity(), result.toString(), Toast.LENGTH_LONG).show();
                 super.onPostExecute(result);
+            }
+        }
+        public class GetAPI extends AsyncTask<String, Void, JSONObject> {
+
+            @Override
+            protected void onPreExecute() {
+            }
+
+            @Override
+            protected JSONObject doInBackground(String... s) {
+                InputStream inputStream = null;
+                String result = null;
+                JSONObject jObject = null;
+
+                try {
+
+                    HttpClient httpClient = new DefaultHttpClient();
+                    HttpContext localContext = new BasicHttpContext();
+                    HttpGet httpGet = new HttpGet(Global.AWS_URL + "v1/users/stream/1");
+
+
+                    HttpResponse response = httpClient.execute(httpGet, localContext);
+                    HttpEntity response_entity = response.getEntity();
+
+                    inputStream = response_entity.getContent();
+
+                    // json is UTF-8 by default
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+                    StringBuilder sb = new StringBuilder();
+
+                    String line = null;
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line + "\n");
+                    }
+
+
+                    result = sb.toString();
+
+                    // write response to log
+                    jObject = new JSONObject(result);
+
+                } catch (ClientProtocolException e) {
+                    // Log exception
+                    Log.v("CLIENT", "ERROR");
+
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    // Log exception
+                    Log.v("IOE", "ERROR");
+
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    Log.v("JSON", "ERROR");
+
+                    e.printStackTrace();
+                }
+
+                return jObject;
+            }
+
+            @Override
+            protected void onPostExecute(JSONObject result) {
+                try {
+                    JSONArray conversations = new JSONArray(result.getString("conversations"));
+//                    Toast.makeText(getActivity(), conversations.toString(), Toast.LENGTH_LONG).show();
+                    for (int i = 0; i < conversations.length(); i ++){
+                        JSONObject json_conversation = conversations.getJSONObject(i);
+                        conversations_array.add(createConversation(json_conversation));
+                        Conversation c = conversations_array.get(i);
+                    }
+//                    Toast.makeText(getActivity(), Integer.toString(conversations_array.size()), Toast.LENGTH_LONG).show();
+                    super.onPostExecute(result);
+                } catch (JSONException e) {
+                    Log.e("Problem accessing API signup", "JSONError");
+                    Log.e(e.toString(), "JSONError");
+                }
+            }
+            private Conversation createConversation(JSONObject json_conversation){
+                Conversation temp_conversation = new Conversation();
+                try {
+                    temp_conversation.title = json_conversation.getString("title");
+                    temp_conversation.id = json_conversation.getInt("id");
+                    temp_conversation.users = createUserList(new JSONArray(json_conversation.getString("users")));
+                } catch (JSONException e) {
+                    Log.v(e.toString(), "JSON ERROR");
+                }
+                return temp_conversation;
+            }
+            private ArrayList<User> createUserList(JSONArray users) {
+                ArrayList<User> user_list = new ArrayList<User>();
+                try {
+                    for (int i = 0; i < users.length(); i++) {
+                        JSONObject json_user = users.getJSONObject(i);
+                        User user = new User();
+                        user.user_id = json_user.getInt("id");
+                        user.filename = json_user.getString("first_name");
+                        user.last_name = json_user.getString("last_name");
+                        user.filename = json_user.getString("filename");
+                        user.phone = json_user.getString("phone");
+                        user_list.add(user);
+                    }
+
+                } catch (Exception e){
+                    Log.e(e.toString(), "EXCEPTION");
+                }
+                return user_list;
             }
         }
 
