@@ -54,18 +54,19 @@ public class MainActivity extends ActionBarActivity {
         //https://radiant-inferno-906.firebaseio.com   this is the URL where our data will be stored
         super.onCreate(savedInstanceState);
         Firebase.setAndroidContext(this);
-        firebase = new Firebase("https://radiant-inferno-906.firebaseio.com/");
+        firebase = new Firebase(Global.FBASE_URL);
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, new PlaceholderFragment())
                     .commit();
         }
-        firebase.child("message").addValueEventListener(new ValueEventListener() {
 
+        firebase.child("message").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-                Log.v(snapshot.getValue().toString(), "  <<<<<<<<");
+//                Log.v(snapshot.getValue().toString(), "  <<<<<<<<");
+                Toast.makeText(MainActivity.this, snapshot.getValue().toString(), Toast.LENGTH_LONG).show();
             }
 
             @Override public void onCancelled(FirebaseError error) { }
@@ -133,8 +134,10 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public void onClick(View v) {
             if (v.getId() == R.id.api_call){
-                SignUpAPI task = new SignUpAPI();
-                task.execute();
+                firebase.child("message").setValue("Do you saasdasdasd have data? You'll love Firebase.");
+
+//                SignUpAPI task = new SignUpAPI();
+//                task.execute();
             }
         }
         public class SignUpAPI extends AsyncTask<String, Void, JSONObject> {
@@ -164,7 +167,7 @@ public class MainActivity extends ActionBarActivity {
 
                     StringBuilder sb = new StringBuilder();
 //                    httpPost.setEntity(new StringEntity("{\"user\":{\"password\":\"aa\",\"phone\":\"aa\",\"first_name\":\"aa\",\"last_name\":\"aa\"}}"));
-                    httpPost.setEntity(new StringEntity("{\"conversation\":{\"title\":\"hey\",\"user_id\":1}, \"phones\":[\"aa\", \"2097402793\"]}"));
+                    httpPost.setEntity(new StringEntity("{\"conversation\":{\"title\":\"hey\",\"user_id\":1},\"phones\":[\"aa\",\"2097402793\"]}"));
 //                    httpPost.setEntity(new StringEntity("{\"phones\":[\"a\"]}"));
 
 
