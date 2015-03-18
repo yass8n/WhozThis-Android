@@ -72,8 +72,8 @@ public class MainActivity extends ActionBarActivity {
             @Override public void onCancelled(FirebaseError error) { }
 
         });
-//        startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
-        checkUserLogin();
+        startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
+//        checkUserLogin();
 
     }
 
