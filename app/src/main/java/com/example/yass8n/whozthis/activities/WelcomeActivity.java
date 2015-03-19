@@ -17,9 +17,10 @@ import android.widget.Button;
 import com.example.yass8n.whozthis.R;
 import com.example.yass8n.whozthis.fragments.SignInFragment;
 import com.example.yass8n.whozthis.fragments.SignUpFragment;
+import com.example.yass8n.whozthis.objects.User;
 
 public class WelcomeActivity extends ActionBarActivity {
-
+    public static User current_user = new User();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,6 +48,15 @@ public class WelcomeActivity extends ActionBarActivity {
         int id = item.getItemId();
 
         return super.onOptionsItemSelected(item);
+    }
+    //this is called whenever main activity is created so we can access the static variable "currennt_user"
+    //from anywhere in the app
+    public static void setCurrentUser(String phone, String first, String last, String filename, int user_id){
+        current_user.phone = phone;
+        current_user.filename = "";
+        current_user.first_name = first;
+        current_user.last_name = last;
+        current_user.user_id = user_id;
     }
 
     /**

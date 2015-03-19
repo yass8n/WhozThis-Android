@@ -1,5 +1,11 @@
 package com.example.yass8n.whozthis.objects;
 
+import android.widget.Toast;
+
+import com.example.yass8n.whozthis.activities.MainActivity;
+
+import java.util.InputMismatchException;
+
 /**
  * Created by yass8n on 3/16/15.
  */
@@ -33,5 +39,14 @@ public class User {
         if (phone.substring(0,1).equals("1"))
             phone = phone.substring(1);
         return phone;
+    }
+
+    @Override
+    public boolean equals(Object other){
+        if(other == null) return false;
+        if(other == this) return true;
+        if(!(other instanceof User)) return false;
+        User user = (User)other;
+        return user_id == user.user_id;
     }
 }

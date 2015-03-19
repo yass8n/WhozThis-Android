@@ -87,7 +87,6 @@ public class MainActivity extends ActionBarActivity {
                     .add(R.id.container, new PlaceholderFragment())
                     .commit();
         }
-
         firebase.child("user_id").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
@@ -99,11 +98,14 @@ public class MainActivity extends ActionBarActivity {
 
         });
 //        startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
-        if (checkUserLogin()){
-            GetStreamAPI task = new GetStreamAPI();
-            task.execute();
-        }
+    }
 
+    @Override
+    public void onStart(){
+        if (checkUserLogin()){
+            refreshConversations();
+        }
+        super.onStart();
     }
 
 
@@ -120,13 +122,12 @@ public class MainActivity extends ActionBarActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
         if (id == R.id.sign_out) {
             getSharedPreferences("user", Context.MODE_PRIVATE).edit().clear().commit();
             conversations_array.clear();
             startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
         } else if (id == R.id.edit_profile){
-            Toast.makeText(this, "Editing Profile!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Editing Profile!" + WelcomeActivity.current_user.phone, Toast.LENGTH_SHORT).show();
         }
 
         return super.onOptionsItemSelected(item);
@@ -138,6 +139,9 @@ public class MainActivity extends ActionBarActivity {
         if (user.contains("signed_in")) {
             final String signed_in = user.getString("signed_in", null);
             if (signed_in.equals("true")) {
+                WelcomeActivity.setCurrentUser(user.getString("phone", null), user.getString("first", null),
+                        user.getString("last", null), "", Integer.parseInt(user.getString("user_id", null)));
+                //also need to make sure the modal removes the current user
                 result =  true;
             }
         } else {
@@ -406,9 +410,10 @@ public class MainActivity extends ActionBarActivity {
                 protected ArrayList<User> doInBackground(Conversation... c) {
                     ArrayList<User> users_in_convo = new ArrayList<>();
 
-                    for (int i = 1; i < c[0].users.size(); i++) {
+                    for (int i = 0; i < c[0].users.size(); i++) {
                         users_in_convo.add(c[0].users.get(i));
                     }
+                    users_in_convo.remove(WelcomeActivity.current_user);//dont show the current user in the modal
                     return users_in_convo;
                 }
 

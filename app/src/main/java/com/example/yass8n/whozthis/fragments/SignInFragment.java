@@ -19,7 +19,9 @@ import android.widget.Toast;
 
 import com.example.yass8n.whozthis.R;
 import com.example.yass8n.whozthis.activities.MainActivity;
+import com.example.yass8n.whozthis.activities.WelcomeActivity;
 import com.example.yass8n.whozthis.objects.Global;
+import com.example.yass8n.whozthis.objects.User;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
