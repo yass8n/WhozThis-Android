@@ -123,6 +123,7 @@ public class MainActivity extends ActionBarActivity {
 
         if (id == R.id.sign_out) {
             getSharedPreferences("user", Context.MODE_PRIVATE).edit().clear().commit();
+            conversations_array.clear();
             startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
         } else if (id == R.id.edit_profile){
             Toast.makeText(this, "Editing Profile!", Toast.LENGTH_SHORT).show();
