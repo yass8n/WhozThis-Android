@@ -1,5 +1,6 @@
 package com.example.yass8n.whozthis.activities;
 
+import android.graphics.Bitmap;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -10,6 +11,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.example.yass8n.whozthis.R;
 
@@ -53,7 +58,13 @@ public class ProfileActivity extends ActionBarActivity {
      * A placeholder fragment containing a simple view.
      */
     public static class PlaceholderFragment extends Fragment {
-
+        private static final int SELECT_IMAGE = 1;
+        private ImageView profile_pic;
+        private Bitmap profile_pic_bitmap;
+        private EditText f_name;
+        private EditText l_name;
+        private TextView name;
+        private ProgressBar spinner;
         public PlaceholderFragment() {
         }
 

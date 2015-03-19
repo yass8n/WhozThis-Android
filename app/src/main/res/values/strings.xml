@@ -14,5 +14,6 @@
     <string name="title_activity_profile">ProfileActivity</string>
     <string name="title_activity_contact">ContactActivity</string>
     <string name="people_in_convo">People in the conversation</string>
+    <string name="last_name">Last Name</string>
 
 </resources>
