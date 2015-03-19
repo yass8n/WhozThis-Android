@@ -11,5 +11,8 @@
     <string name="sign_up">Sign up</string>
     <string name="sign_out">Sign Out</string>
     <string name="edit_profile">Edit Profile</string>
+    <string name="title_activity_profile">ProfileActivity</string>
+    <string name="title_activity_contact">ContactActivity</string>
+    <string name="people_in_convo">People in the conversation</string>
 
 </resources>

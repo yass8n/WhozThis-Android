@@ -2,18 +2,43 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="match_parent"
     android:weightSum="100"
+    android:background="@color/white"
     android:layout_height="90dp">
+    <RelativeLayout
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:layout_marginLeft="5dp"
+        android:layout_gravity="left|center"
+        android:id="@+id/users_modal"
+        >
     <com.makeramen.RoundedImageView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="65dp"
+        android:layout_height="65dp"
+        android:src="@color/lighter_gray"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        app:riv_oval="true"
+        app:riv_corner_radius="30dip"
+        android:scaleType="fitCenter"
+        />
+    <com.makeramen.RoundedImageView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:src="@drawable/ic_launcher"
-        android:layout_marginLeft="10dp"
-        android:layout_gravity="left|center"
+        android:id="@+id/modal_pic"
+        android:src="@drawable/single_pic"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        app:riv_oval="true"
+        app:riv_corner_radius="30dip"
+        android:scaleType="fitCenter"
         />
+    </RelativeLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginLeft="10dp"
+        android:layout_marginLeft="5dp"
         android:weightSum="95"
         android:orientation="vertical">
         <TextView

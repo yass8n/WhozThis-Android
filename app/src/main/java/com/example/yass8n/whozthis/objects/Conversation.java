@@ -12,6 +12,10 @@ public class Conversation {
     public int id;
     private String date;
 
+    public void Conversation(){
+        this.title = "";
+    }
+
     public void Conversation(String title, int owner_id, int id, String date){
         this.title = title;
         this.owner_id = owner_id;

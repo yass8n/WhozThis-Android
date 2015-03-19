@@ -10,6 +10,13 @@ public class User {
     public String filename;
     public int user_id;
 
+    public void User(){
+        this.phone = "";
+        this.first_name = "";
+        this.last_name = "";
+        this.filename = "";
+        this.user_id = 0;
+    }
     public void User(String phone, String first_name, String last_name, String filename, int user_id){
         this.phone = stripPhone(phone);
         this.first_name = first_name;

@@ -1,25 +1,33 @@
 package com.example.yass8n.whozthis.activities;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
+import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +39,7 @@ import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
+import com.squareup.picasso.Picasso;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -55,12 +64,14 @@ import java.util.ArrayList;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.StringBody;
+import android.support.v4.widget.SwipeRefreshLayout;
 
 
 public class MainActivity extends ActionBarActivity {
     public static Firebase firebase;
     public static Context context;
     public static ArrayList<Conversation> conversations_array = new ArrayList<Conversation>();
+    //need the conversations array attached to the main activity so we can access it from other activities with "MainActivity.conversations_array"
 
 
     @Override
@@ -119,6 +130,7 @@ public class MainActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
     public boolean checkUserLogin(){
         boolean result = true;
         SharedPreferences user = getSharedPreferences("user", Context.MODE_PRIVATE);
@@ -134,6 +146,11 @@ public class MainActivity extends ActionBarActivity {
         return result;
     }
 
+    public void refreshConversations(){
+        conversations_array.clear();
+        GetStreamAPI get_stream = new GetStreamAPI();
+        get_stream.execute();
+    }
 
     public static class GetStreamAPI extends AsyncTask<String, Void, JSONObject> {
 
@@ -229,9 +246,9 @@ public class MainActivity extends ActionBarActivity {
                     JSONObject json_user = users.getJSONObject(i);
                     User user = new User();
                     user.user_id = json_user.getInt("id");
-                    user.filename = json_user.getString("first_name");
-                    user.last_name = json_user.getString("last_name");
                     user.filename = json_user.getString("filename");
+                    user.first_name = json_user.getString("first_name");
+                    user.last_name = json_user.getString("last_name");
                     user.phone = json_user.getString("phone");
                     user_list.add(user);
                 }
@@ -246,9 +263,11 @@ public class MainActivity extends ActionBarActivity {
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment implements View.OnClickListener {
+    public static class PlaceholderFragment extends Fragment implements View.OnClickListener, SwipeRefreshLayout.OnRefreshListener {
         public ListView conversations_list;
         public static ConversationsAdapter conversatons_adapter;
+        private SwipeRefreshLayout refreshLayout;
+
 
         public PlaceholderFragment() {
         }
@@ -257,9 +276,11 @@ public class MainActivity extends ActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-//            Button api_call = (Button) rootView.findViewById(R.id.api_call);
-//            api_call.setOnClickListener(this);
             conversatons_adapter = new ConversationsAdapter();
+            RelativeLayout create_message = (RelativeLayout) rootView.findViewById(R.id.create_message);
+            create_message.setOnClickListener(this);
+            refreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
+            refreshLayout.setOnRefreshListener(this);
             conversations_list = (ListView) rootView.findViewById(R.id.conversations_scroll);
             conversations_list.setAdapter(conversatons_adapter);
             conversations_list.requestLayout();
@@ -268,16 +289,29 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         public void onClick(View v) {
-//            if (v.getId() == R.id.api_call) {
-////                firebase.child("user_id").setValue("5");
+//                firebase.child("user_id").setValue("5");
 //                firebase = new Firebase("https://radiant-inferno-906.firebaseio.com/conversation/1");
 //                firebase.child("first_maessage").setValue("Setting message.");
-//
-//
 //                GetStreamAPI task = new GetStreamAPI();
 //                task.execute();
-//
-//            }
+            Log.v(Integer.toString(v.getId()), " <<<<<<<<");
+            if (v.getId() == R.id.create_message ) {
+                Toast.makeText(context, "Go to Contact Activity", Toast.LENGTH_SHORT).show();
+//                startActivity(new Intent(getActivity(), ContactActivity.class));
+            }
+        }
+
+        // on refresh of page by pull down
+        @Override public void onRefresh() {
+            MainActivity activity = (MainActivity) getActivity();
+            activity.refreshConversations();
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    refreshLayout.setRefreshing(false);
+                }
+            }, 2000);
         }
 
         public class ConversationsAdapter extends BaseAdapter {
@@ -324,11 +358,26 @@ public class MainActivity extends ActionBarActivity {
                 }
                 ConversationViewHolder holder = (ConversationViewHolder) conversation_view.getTag();
                 conversation_view.setId(position);
-                Conversation conversation = conversations_array.get(position);
+                final Conversation conversation = conversations_array.get(position);
 
                 holder.date.setText(conversation.getDate());
                 holder.title.setText(conversation.title);
                 holder.last_message.setText("Put the last message in here");
+                RelativeLayout image = (RelativeLayout) conversation_view.findViewById(R.id.users_modal);
+                ImageView modal_pic = (ImageView) image.findViewById(R.id.modal_pic);
+                if (conversation.users.size() > 2){
+                    modal_pic.setImageResource(R.drawable.group_pic);
+                    image.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            ShowUsersModal task = new ShowUsersModal();
+                            task.execute(conversation);
+                        }
+                    });
+                } else {
+                    //if only 2 ppl in conversation, dont show the modal on click
+                    modal_pic.setImageResource(R.drawable.single_pic);
+                }
                 conversation_view.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -339,6 +388,103 @@ public class MainActivity extends ActionBarActivity {
 
 
                 return conversation_view;
+            }
+            public class ShowUsersModal extends AsyncTask<Conversation, String, ArrayList<User>> {
+                private float user_height;
+                private  AlertDialog.Builder builderSingle;
+                private AlertDialog alertDialog;
+                private UsersAdapter adapter;
+
+                @Override
+                protected void onPreExecute() {
+                    builderSingle = new AlertDialog.Builder(getActivity(), R.style.DialogSlideAnim);
+                    user_height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40, getResources().getDisplayMetrics());
+                }
+
+                @Override
+                protected ArrayList<User> doInBackground(Conversation... c) {
+                    ArrayList<User> users_in_convo = new ArrayList<>();
+
+                    for (int i = 1; i < c[0].users.size(); i++) {
+                        users_in_convo.add(c[0].users.get(i));
+                    }
+                    return users_in_convo;
+                }
+
+                @Override
+                protected void onPostExecute(ArrayList<User> users_in_convo) {
+                    if( alertDialog != null && alertDialog.isShowing() ) return;
+                    adapter = new UsersAdapter(users_in_convo);
+                    LayoutInflater inflater = getActivity().getLayoutInflater();
+                    View header = inflater.inflate(R.layout.modal_header, null, false);
+                    builderSingle.setCustomTitle(header); //setting the "Who's in" header
+                    builderSingle.setAdapter(adapter, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    });
+                    Display display = getActivity().getWindowManager().getDefaultDisplay();
+                    Point size = new Point();
+                    display.getSize(size);
+                    double window_width = (double) size.x;
+                    window_width = window_width /1.5;
+                    alertDialog = builderSingle.create();
+                    alertDialog.show();
+                    WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+                    lp.copyFrom(alertDialog.getWindow().getAttributes());
+                    lp.height = (int) (users_in_convo.size() >= 4 ? user_height * 5 : (user_height * (users_in_convo.size() + 1)));//111 is height of one list item..80 is height of header
+                    lp.width = (int) window_width;
+                    lp.dimAmount = 0.5f;
+                    lp.x = 0;
+                    alertDialog.getWindow().setAttributes(lp);
+                }
+            }
+
+            public class UsersAdapter extends BaseAdapter{
+                private LayoutInflater inflater;
+                ArrayList<User> user_array = new ArrayList<>();
+
+                UsersAdapter(ArrayList<User> user_array) {
+                    this.inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    this.user_array = (ArrayList<User>) user_array.clone();
+                }
+
+                @Override
+                public int getCount() {
+                    return this.user_array.size();
+                }
+
+                @Override
+                public Object getItem(int position) {
+                    return this.user_array.get(position);
+
+                }
+
+                @Override
+                public long getItemId(int position) {
+                    return position;
+                }
+
+                @Override
+                public View getView(int position, View convertView, ViewGroup parent) {
+                    LayoutInflater inflater = getActivity().getLayoutInflater();
+                    View view = inflater.inflate(R.layout.users_list_fragment, parent, false);
+                    TextView first_name = (TextView) view.findViewById(R.id.full_name);
+                    User user = this.user_array.get(position);
+                    ImageView image = (ImageView) view.findViewById(R.id.display_pic);
+                    first_name.setText(user.first_name + " " +user.last_name);
+                    if (!Global.empty(user.filename)) {
+                        Picasso.with(getActivity())
+                                .cancelRequest(image);
+                        Picasso.with(getActivity())
+                                .load(user.filename)
+                                .into(image);
+                    } else {
+                        image.setImageResource(R.drawable.single_pic);
+                    }
+                    return view;
+                }
+
             }
 
             public class PostAPI extends AsyncTask<String, Void, JSONObject> {
