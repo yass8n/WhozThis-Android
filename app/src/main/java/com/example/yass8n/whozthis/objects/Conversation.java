@@ -10,10 +10,19 @@ public class Conversation {
     public String title;
     public int owner_id;
     public int id;
+    private String date;
 
-    public void Conversation(String title, int owner_id, int id){
+    public void Conversation(String title, int owner_id, int id, String date){
         this.title = title;
         this.owner_id = owner_id;
         this.id = id;
+        this.date = date;
+    }
+    public void setDate(String date){
+        this.date = date.substring(5, 10);
+        this.date = this.date.replace('-','/');
+    }
+    public String getDate(){
+        return this.date;
     }
 }

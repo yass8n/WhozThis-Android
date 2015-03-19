@@ -3,6 +3,7 @@ package com.example.yass8n.whozthis.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
@@ -15,7 +16,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.yass8n.whozthis.R;
@@ -54,12 +59,15 @@ import org.apache.http.entity.mime.content.StringBody;
 
 public class MainActivity extends ActionBarActivity {
     public static Firebase firebase;
+    public static Context context;
     public static ArrayList<Conversation> conversations_array = new ArrayList<Conversation>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //https://radiant-inferno-906.firebaseio.com   this is the URL where our data will be stored
         super.onCreate(savedInstanceState);
+        context = this;
         Firebase.setAndroidContext(this);
         firebase = new Firebase("https://radiant-inferno-906.firebaseio.com/");
         setContentView(R.layout.activity_main);
@@ -73,14 +81,17 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
 //                Log.v(snapshot.getValue().toString(), "  <<<<<<<<");
-                Toast.makeText(MainActivity.this, "the value of user_id is " + snapshot.getValue().toString(), Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, "the value of user_id is " + snapshot.getValue().toString(), Toast.LENGTH_SHORT).show();
             }
 
             @Override public void onCancelled(FirebaseError error) { }
 
         });
 //        startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
-        checkUserLogin();
+        if (checkUserLogin()){
+            GetStreamAPI task = new GetStreamAPI();
+            task.execute();
+        }
 
     }
 
@@ -123,10 +134,121 @@ public class MainActivity extends ActionBarActivity {
         return result;
     }
 
+
+    public static class GetStreamAPI extends AsyncTask<String, Void, JSONObject> {
+
+        @Override
+        protected void onPreExecute() {
+        }
+
+        @Override
+        protected JSONObject doInBackground(String... s) {
+            InputStream inputStream = null;
+            String result = null;
+            JSONObject jObject = null;
+
+            try {
+
+                HttpClient httpClient = new DefaultHttpClient();
+                HttpContext localContext = new BasicHttpContext();
+                HttpGet httpGet = new HttpGet(Global.AWS_URL + "v1/users/stream/1");
+
+
+                HttpResponse response = httpClient.execute(httpGet, localContext);
+                HttpEntity response_entity = response.getEntity();
+
+                inputStream = response_entity.getContent();
+
+                // json is UTF-8 by default
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+                StringBuilder sb = new StringBuilder();
+
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line + "\n");
+                }
+
+
+                result = sb.toString();
+
+                // write response to log
+                jObject = new JSONObject(result);
+
+            } catch (ClientProtocolException e) {
+                // Log exception
+                Log.v("CLIENT", "ERROR");
+
+                e.printStackTrace();
+            } catch (IOException e) {
+                // Log exception
+                Log.v("IOE", "ERROR");
+
+                e.printStackTrace();
+            } catch (JSONException e) {
+                Log.v("JSON", "ERROR");
+
+                e.printStackTrace();
+            }
+
+            return jObject;
+        }
+
+        @Override
+        protected void onPostExecute(JSONObject result) {
+            try {
+                JSONArray conversations = new JSONArray(result.getString("conversations"));
+//                    Toast.makeText(getActivity(), conversations.toString(), Toast.LENGTH_LONG).show();
+                for (int i = 0; i < conversations.length(); i ++){
+                    JSONObject json_conversation = conversations.getJSONObject(i);
+                    conversations_array.add(createConversation(json_conversation));
+                }
+//                    Toast.makeText(context, Integer.toString(conversations_array.size()), Toast.LENGTH_LONG).show();
+                super.onPostExecute(result);
+            } catch (JSONException e) {
+                Log.e("Problem accessing API signup", "JSONError");
+                Log.e(e.toString(), "JSONError");
+            }
+            PlaceholderFragment.conversatons_adapter.notifyDataSetChanged();
+        }
+        private Conversation createConversation(JSONObject json_conversation){
+            Conversation temp_conversation = new Conversation();
+            try {
+                temp_conversation.title = json_conversation.getString("title");
+                temp_conversation.id = json_conversation.getInt("id");
+                temp_conversation.setDate(json_conversation.getString("created_at"));
+                temp_conversation.users = createUserList(new JSONArray(json_conversation.getString("users")));
+            } catch (JSONException e) {
+                Log.v(e.toString(), "JSON ERROR");
+            }
+            return temp_conversation;
+        }
+        private ArrayList<User> createUserList(JSONArray users) {
+            ArrayList<User> user_list = new ArrayList<User>();
+            try {
+                for (int i = 0; i < users.length(); i++) {
+                    JSONObject json_user = users.getJSONObject(i);
+                    User user = new User();
+                    user.user_id = json_user.getInt("id");
+                    user.filename = json_user.getString("first_name");
+                    user.last_name = json_user.getString("last_name");
+                    user.filename = json_user.getString("filename");
+                    user.phone = json_user.getString("phone");
+                    user_list.add(user);
+                }
+
+            } catch (Exception e){
+                Log.e(e.toString(), "EXCEPTION");
+            }
+            return user_list;
+        }
+    }
+
     /**
      * A placeholder fragment containing a simple view.
      */
     public static class PlaceholderFragment extends Fragment implements View.OnClickListener {
+        public ListView conversations_list;
+        public static ConversationsAdapter conversatons_adapter;
 
         public PlaceholderFragment() {
         }
@@ -135,209 +257,172 @@ public class MainActivity extends ActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            Button api_call = (Button) rootView.findViewById(R.id.api_call);
-            api_call.setOnClickListener(this);
+//            Button api_call = (Button) rootView.findViewById(R.id.api_call);
+//            api_call.setOnClickListener(this);
+            conversatons_adapter = new ConversationsAdapter();
+            conversations_list = (ListView) rootView.findViewById(R.id.conversations_scroll);
+            conversations_list.setAdapter(conversatons_adapter);
+            conversations_list.requestLayout();
             return rootView;
         }
 
         @Override
         public void onClick(View v) {
-            if (v.getId() == R.id.api_call){
-//                firebase.child("user_id").setValue("5");
-                firebase = new Firebase("https://radiant-inferno-906.firebaseio.com/conversation/1");
-                firebase.child("first_maessage").setValue("Setting message.");
-
-
-
-//                PostAPI task = new PostAPI();
+//            if (v.getId() == R.id.api_call) {
+////                firebase.child("user_id").setValue("5");
+//                firebase = new Firebase("https://radiant-inferno-906.firebaseio.com/conversation/1");
+//                firebase.child("first_maessage").setValue("Setting message.");
+//
+//
+//                GetStreamAPI task = new GetStreamAPI();
 //                task.execute();
-
-                GetAPI task = new GetAPI();
-                task.execute();
-            }
+//
+//            }
         }
 
-        public class PostAPI extends AsyncTask<String, Void, JSONObject> {
+        public class ConversationsAdapter extends BaseAdapter {
 
-            @Override
-            protected void onPreExecute() {
+            ConversationsAdapter() {
+            }
+
+            class ConversationViewHolder {
+                TextView date;
+                TextView title;
+                ImageView picture;
+                TextView last_message;
             }
 
             @Override
-            protected JSONObject doInBackground(String... s) {
+            public int getCount() {
+                return conversations_array.size();
+            }
 
-                JSONObject jObject = null;
-                InputStream inputStream = null;
-                String result = null;
-                try {
+            @Override
+            public Object getItem(int position) {
+                return conversations_array.get(position);
 
-                    HttpClient httpClient = new DefaultHttpClient();
-                    HttpContext localContext = new BasicHttpContext();
+            }
+
+            @Override
+            public long getItemId(int position) {
+                return position;
+            }
+
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View conversation_view = convertView;
+
+                if (conversation_view == null) {
+                    LayoutInflater inflater = getActivity().getLayoutInflater();
+                    ConversationViewHolder view_holder = new ConversationViewHolder();
+                    conversation_view = inflater.inflate(R.layout.conversation_fragment, parent, false);
+                    view_holder.date = (TextView) conversation_view.findViewById(R.id.date);
+                    view_holder.title = (TextView) conversation_view.findViewById(R.id.title);
+                    view_holder.picture = (ImageView) conversation_view.findViewById(R.id.profile_pic);
+                    view_holder.last_message = (TextView) conversation_view.findViewById(R.id.last_message);
+                    conversation_view.setTag(view_holder);
+                }
+                ConversationViewHolder holder = (ConversationViewHolder) conversation_view.getTag();
+                conversation_view.setId(position);
+                Conversation conversation = conversations_array.get(position);
+
+                holder.date.setText(conversation.getDate());
+                holder.title.setText(conversation.title);
+                holder.last_message.setText("Put the last message in here");
+                conversation_view.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(getActivity(), "This should open up a new activity called 'MessageActivity' that will show all the messages for this conversation", Toast.LENGTH_LONG).show();
+                    }
+                });
+
+
+
+                return conversation_view;
+            }
+
+            public class PostAPI extends AsyncTask<String, Void, JSONObject> {
+
+                @Override
+                protected void onPreExecute() {
+                }
+
+                @Override
+                protected JSONObject doInBackground(String... s) {
+
+                    JSONObject jObject = null;
+                    InputStream inputStream = null;
+                    String result = null;
+                    try {
+
+                        HttpClient httpClient = new DefaultHttpClient();
+                        HttpContext localContext = new BasicHttpContext();
 //                    HttpPost httpPost = new HttpPost("http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/v1/users/sign_up");
-                    HttpPost httpPost = new HttpPost("http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/v1/users/friends");
+                        HttpPost httpPost = new HttpPost("http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/v1/users/friends");
 //                    HttpPost httpPost = new HttpPost("http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/v1/users/friends");
 
-                    httpPost.setHeader("Accept", "application/json");
-                    httpPost.setHeader("Content-type", "application/json");
+                        httpPost.setHeader("Accept", "application/json");
+                        httpPost.setHeader("Content-type", "application/json");
 
-                    MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+                        MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
 
-                    StringBuilder sb = new StringBuilder();
+                        StringBuilder sb = new StringBuilder();
 //                    httpPost.setEntity(new StringEntity("{\"user\":{\"password\":\"aa\",\"phone\":\"aa\",\"first_name\":\"aa\",\"last_name\":\"aa\"}}"));
 //                    httpPost.setEntity(new StringEntity("{\"conversation\":{\"title\":\"hey\",\"user_id\":1},\"phones\":[\"aa\",\"2097402793\"]}"));
-                    httpPost.setEntity(new StringEntity("{\"phones\":[\"a\"]}"));
+                        httpPost.setEntity(new StringEntity("{\"phones\":[\"a\"]}"));
 
 
-                    HttpResponse response = httpClient.execute(httpPost, localContext);
-                    HttpEntity response_entity = response.getEntity();
+                        HttpResponse response = httpClient.execute(httpPost, localContext);
+                        HttpEntity response_entity = response.getEntity();
 
-                    inputStream = response_entity.getContent();
+                        inputStream = response_entity.getContent();
 
-                    // json is UTF-8 by default
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
-                    sb = new StringBuilder();
+                        // json is UTF-8 by default
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+                        sb = new StringBuilder();
 
-                    String line = null;
-                    while ((line = reader.readLine()) != null) {
-                        sb.append(line + "\n");
+                        String line = null;
+                        while ((line = reader.readLine()) != null) {
+                            sb.append(line + "\n");
+                        }
+
+                        result = sb.toString();
+
+                        // write response to log
+                        jObject = new JSONObject(result);
+
+
+                    } catch (ClientProtocolException e) {
+                        // Log exception
+                        Log.v("CLIENT", "ERROR");
+
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        // Log exception
+                        Log.v("IOE", "ERROR");
+
+                        e.printStackTrace();
+                    } catch (JSONException e) {
+                        Log.v(e.toString(), "ERROR");
+
+                        e.printStackTrace();
                     }
-
-                    result = sb.toString();
-
-                    // write response to log
-                    jObject = new JSONObject(result);
-
-
-                } catch (ClientProtocolException e) {
-                    // Log exception
-                    Log.v("CLIENT", "ERROR");
-
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    // Log exception
-                    Log.v("IOE", "ERROR");
-
-                    e.printStackTrace();
-                } catch (JSONException e) {
-                    Log.v(e.toString(), "ERROR");
-
-                    e.printStackTrace();
-                }
-                return jObject;
-            }
-
-            @Override
-            protected void onPostExecute(JSONObject result) {
-                Toast.makeText(getActivity(), result.toString(), Toast.LENGTH_LONG).show();
-                super.onPostExecute(result);
-            }
-        }
-        public class GetAPI extends AsyncTask<String, Void, JSONObject> {
-
-            @Override
-            protected void onPreExecute() {
-            }
-
-            @Override
-            protected JSONObject doInBackground(String... s) {
-                InputStream inputStream = null;
-                String result = null;
-                JSONObject jObject = null;
-
-                try {
-
-                    HttpClient httpClient = new DefaultHttpClient();
-                    HttpContext localContext = new BasicHttpContext();
-                    HttpGet httpGet = new HttpGet(Global.AWS_URL + "v1/users/stream/1");
-
-
-                    HttpResponse response = httpClient.execute(httpGet, localContext);
-                    HttpEntity response_entity = response.getEntity();
-
-                    inputStream = response_entity.getContent();
-
-                    // json is UTF-8 by default
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
-                    StringBuilder sb = new StringBuilder();
-
-                    String line = null;
-                    while ((line = reader.readLine()) != null) {
-                        sb.append(line + "\n");
-                    }
-
-
-                    result = sb.toString();
-
-                    // write response to log
-                    jObject = new JSONObject(result);
-
-                } catch (ClientProtocolException e) {
-                    // Log exception
-                    Log.v("CLIENT", "ERROR");
-
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    // Log exception
-                    Log.v("IOE", "ERROR");
-
-                    e.printStackTrace();
-                } catch (JSONException e) {
-                    Log.v("JSON", "ERROR");
-
-                    e.printStackTrace();
+                    return jObject;
                 }
 
-                return jObject;
-            }
-
-            @Override
-            protected void onPostExecute(JSONObject result) {
-                try {
-                    JSONArray conversations = new JSONArray(result.getString("conversations"));
-//                    Toast.makeText(getActivity(), conversations.toString(), Toast.LENGTH_LONG).show();
-                    for (int i = 0; i < conversations.length(); i ++){
-                        JSONObject json_conversation = conversations.getJSONObject(i);
-                        conversations_array.add(createConversation(json_conversation));
-                        Conversation c = conversations_array.get(i);
-                    }
-//                    Toast.makeText(getActivity(), Integer.toString(conversations_array.size()), Toast.LENGTH_LONG).show();
+                @Override
+                protected void onPostExecute(JSONObject result) {
+                    Toast.makeText(getActivity(), result.toString(), Toast.LENGTH_LONG).show();
                     super.onPostExecute(result);
-                } catch (JSONException e) {
-                    Log.e("Problem accessing API signup", "JSONError");
-                    Log.e(e.toString(), "JSONError");
                 }
             }
-            private Conversation createConversation(JSONObject json_conversation){
-                Conversation temp_conversation = new Conversation();
-                try {
-                    temp_conversation.title = json_conversation.getString("title");
-                    temp_conversation.id = json_conversation.getInt("id");
-                    temp_conversation.users = createUserList(new JSONArray(json_conversation.getString("users")));
-                } catch (JSONException e) {
-                    Log.v(e.toString(), "JSON ERROR");
-                }
-                return temp_conversation;
-            }
-            private ArrayList<User> createUserList(JSONArray users) {
-                ArrayList<User> user_list = new ArrayList<User>();
-                try {
-                    for (int i = 0; i < users.length(); i++) {
-                        JSONObject json_user = users.getJSONObject(i);
-                        User user = new User();
-                        user.user_id = json_user.getInt("id");
-                        user.filename = json_user.getString("first_name");
-                        user.last_name = json_user.getString("last_name");
-                        user.filename = json_user.getString("filename");
-                        user.phone = json_user.getString("phone");
-                        user_list.add(user);
-                    }
 
-                } catch (Exception e){
-                    Log.e(e.toString(), "EXCEPTION");
-                }
-                return user_list;
-            }
         }
+    }
+
+
+
+
 
 //    private class getContactsTask extends AsyncTask<Void, String, String> {
 //
@@ -409,5 +494,4 @@ public class MainActivity extends ActionBarActivity {
 //        protected void onProgressUpdate(String... text) {
 //        }
 //    }
-    }
 }
