@@ -1,0 +1,139 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+        <!--Header-->
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:focusableInTouchMode="true"
+            android:focusable="true"
+            android:gravity="center" >
+
+            <EditText
+                android:id="@+id/first_name"
+                android:hint="@string/first_name"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:background="@color/white"
+                android:inputType="textCapWords"
+                android:paddingLeft="10dp"
+                />
+            <ImageView
+                android:layout_width="1dp"
+                android:layout_height="40dp"
+                android:src="@color/lighter_gray"/>
+
+            <EditText
+                android:id="@+id/last_name"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:background="@color/white"
+                android:hint="@string/last_name"
+                android:paddingLeft="10dp"
+                android:inputType="textCapWords" />
+
+        </LinearLayout>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center" >
+
+
+            <com.makeramen.RoundedImageView
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_width="130dp"
+                android:layout_height="130dp"
+                android:layout_marginBottom="130dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/white"
+                android:clickable="true"
+                app:riv_oval="true" />
+
+        </LinearLayout>
+
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="130dp"
+            android:layout_weight="1"
+            android:gravity="center" >
+            <ProgressBar
+                android:id="@+id/profile_progress"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="50dp"
+                android:layout_marginTop="50dp"
+                android:visibility="gone" />
+
+            <com.makeramen.RoundedImageView
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_width="125dp"
+                android:layout_height="125dp"
+                android:id="@+id/profile_pic"
+                android:layout_marginBottom="130dp"
+                android:clickable="true"
+                android:scaleType="centerCrop"
+                android:src="@drawable/single_pic"
+                app:riv_oval="true" />
+
+        </RelativeLayout>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:layout_marginBottom="10dp" >
+            <TextView
+                android:layout_width="70dp"
+                android:layout_height="30dp"
+                android:layout_marginBottom="42dp"
+                android:textSize="18dp"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="Change"
+                android:clickable="true"
+                android:id="@+id/change_pic"
+                android:gravity="center|top" />
+        </LinearLayout>
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/black"
+            android:id="@+id/faded"
+            android:visibility="gone"
+            android:alpha=".5"/>
+    </RelativeLayout>
+    <ProgressBar
+        android:id="@+id/progressBar1"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:visibility="gone" />
+
+</RelativeLayout>

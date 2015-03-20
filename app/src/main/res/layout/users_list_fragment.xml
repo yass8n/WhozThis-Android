@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:minHeight="40dp"
+    android:orientation="vertical"
+    android:background="@drawable/user_border"
+    android:clickable="true">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:animateLayoutChanges="true"
+        android:background="@drawable/user_border"
+        android:weightSum="3"
+       >
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginLeft="6dp"
+            android:layout_gravity="center" >
+
+            <com.makeramen.RoundedImageView
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:id="@+id/display_pic"
+                android:layout_gravity="center"
+                android:layout_marginLeft="3dp"
+                android:layout_marginStart="3dp"
+                android:src="@drawable/single_pic"
+                app:riv_border_width="1dip"
+                app:riv_border_color="@color/lighter_gray"
+                android:clickable="true"
+                android:scaleType="centerCrop"
+                app:riv_oval="true"
+                android:cropToPadding="false" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/first_letter"
+                android:textSize="12dp"
+                android:gravity="center"
+                android:paddingLeft="3dp"
+                android:layout_centerInParent="true"
+                android:textColor="@color/white"/>
+
+        </RelativeLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/full_name"
+            android:layout_gravity="center"
+            android:textColor="@color/dark_gray"
+            android:textSize="12dp"
+            android:gravity="start"
+            android:layout_weight="3"
+            android:layout_marginLeft="8sp"
+            android:layout_marginStart="8sp"
+            />
+
+    </LinearLayout>
+</RelativeLayout>
