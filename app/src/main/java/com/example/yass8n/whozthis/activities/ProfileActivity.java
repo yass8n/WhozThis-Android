@@ -54,7 +54,6 @@ import java.io.InputStreamReader;
 public class ProfileActivity extends ActionBarActivity {
     public static Context context;
     public static Activity activity;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
