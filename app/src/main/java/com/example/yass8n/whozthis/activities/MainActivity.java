@@ -78,7 +78,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         //https://radiant-inferno-906.firebaseio.com   this is the URL where our data will be stored
         super.onCreate(savedInstanceState);
-        context = monkey_man;
+        context = this;
         Firebase.setAndroidContext(this);
         firebase = new Firebase("https://radiant-inferno-906.firebaseio.com/");
         setContentView(R.layout.activity_main);
