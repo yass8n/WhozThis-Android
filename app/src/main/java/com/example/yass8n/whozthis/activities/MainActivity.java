@@ -124,10 +124,9 @@ public class MainActivity extends ActionBarActivity {
         int id = item.getItemId();
         if (id == R.id.sign_out) {
             getSharedPreferences("user", Context.MODE_PRIVATE).edit().clear().commit();
-            conversations_array.clear();
             startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
         } else if (id == R.id.edit_profile){
-            Toast.makeText(this, "Editing Profile!" + WelcomeActivity.current_user.phone, Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(MainActivity.this, ProfileActivity.class));
         }
 
         return super.onOptionsItemSelected(item);
@@ -152,7 +151,6 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void refreshConversations(){
-        conversations_array.clear();
         GetStreamAPI get_stream = new GetStreamAPI();
         get_stream.execute();
     }
@@ -173,7 +171,7 @@ public class MainActivity extends ActionBarActivity {
 
                 HttpClient httpClient = new DefaultHttpClient();
                 HttpContext localContext = new BasicHttpContext();
-                HttpGet httpGet = new HttpGet(Global.AWS_URL + "v1/users/stream/1");
+                HttpGet httpGet = new HttpGet(Global.AWS_URL + "v1/users/stream/" + Integer.toString(WelcomeActivity.current_user.user_id));
 
 
                 HttpResponse response = httpClient.execute(httpGet, localContext);
@@ -220,6 +218,7 @@ public class MainActivity extends ActionBarActivity {
             try {
                 JSONArray conversations = new JSONArray(result.getString("conversations"));
 //                    Toast.makeText(getActivity(), conversations.toString(), Toast.LENGTH_LONG).show();
+                conversations_array.clear();
                 for (int i = 0; i < conversations.length(); i ++){
                     JSONObject json_conversation = conversations.getJSONObject(i);
                     conversations_array.add(createConversation(json_conversation));
@@ -386,11 +385,9 @@ public class MainActivity extends ActionBarActivity {
                 conversation_view.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Toast.makeText(getActivity(), "This should open up a new activity called 'MessageActivity' that will show all the messages for this conversation", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity(), "LEON: This should open up a new activity called 'MessageActivity' that will show all the messages for this conversation", Toast.LENGTH_LONG).show();
                     }
                 });
-
-
 
                 return conversation_view;
             }

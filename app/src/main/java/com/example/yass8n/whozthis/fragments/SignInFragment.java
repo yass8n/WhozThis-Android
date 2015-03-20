@@ -147,30 +147,9 @@ public class SignInFragment extends Fragment implements View.OnClickListener {
         @Override
         protected void onPostExecute(JSONObject result) {
             if (status_code == 200) {
-                try {
-                    JSONObject user = new JSONObject(result.getString("user"));
-                    Global.log("", result);
-
-                    String user_id = user.getString("id");
-                    String first = user.getString("first_name");
-                    String last = user.getString("last_name");
-                    String phone = user.getString("phone");
-
-                    SharedPreferences sharedpreferences = getActivity().getSharedPreferences("user", Context.MODE_PRIVATE);
-                    SharedPreferences.Editor editor = sharedpreferences.edit();
-
-                    editor.putString("signed_in", "true");
-                    editor.putString("user_id", user_id);
-                    editor.putString("first", first);
-                    editor.putString("last", last);
-                    editor.putString("phone", phone);
-                    editor.commit();
-
+                    Global.saveUserToPhone(result, getActivity());
                     getActivity().startActivity(new Intent(getActivity(), MainActivity.class));
                     super.onPostExecute(result);
-                } catch (JSONException e) {
-                    Log.e("Problem accessing API signup", "JSONError");
-                }
 
             } else if (result.has("error")){
                 try {

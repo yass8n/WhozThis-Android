@@ -120,11 +120,11 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
                 MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
 
                 // setting image to binary
-                profile_pic.buildDrawingCache();
-                profile_pic_bitmap = profile_pic.getDrawingCache();
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                profile_pic_bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                byte[] data = stream.toByteArray();
+//                profile_pic.buildDrawingCache();
+//                profile_pic_bitmap = profile_pic.getDrawingCache();
+//                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//                profile_pic_bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+//                byte[] data = stream.toByteArray();
 
 //                entity.addPart("filename", new ByteArrayBody(data, "profile_pic.png"));
 
@@ -180,31 +180,9 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
         @Override
         protected void onPostExecute(JSONObject result) {
             if (status_code == 200) {
-                try {
-                    Global.log("", result);
-                    JSONObject user = new JSONObject(result.getString("user"));
-
-                    String user_id = user.getString("id");
-                    String first = user.getString("first_name");
-                    String last = user.getString("last_name");
-                    String phone = user.getString("phone");
-
-                    SharedPreferences sharedpreferences = getActivity().getSharedPreferences("user", Context.MODE_PRIVATE);
-                    SharedPreferences.Editor editor = sharedpreferences.edit();
-
-                    editor.putString("signed_in", "true");
-                    editor.putString("user_id", user_id);
-                    editor.putString("first", first);
-                    editor.putString("last", last);
-                    editor.putString("phone", phone);
-                    editor.commit();
-
-                    getActivity().startActivity(new Intent(getActivity(), MainActivity.class));
-                    super.onPostExecute(result);
-                } catch (JSONException e) {
-                    Log.e("Problem accessing API signup", "JSONError");
-                }
-
+                Global.saveUserToPhone(result, getActivity());
+                getActivity().startActivity(new Intent(getActivity(), MainActivity.class));
+                super.onPostExecute(result);
             } else {
                 Toast.makeText(getActivity(), "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
             }
