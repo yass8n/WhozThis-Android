@@ -80,7 +80,6 @@ public class ProfileActivity extends ActionBarActivity {
 
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -140,6 +139,11 @@ public class ProfileActivity extends ActionBarActivity {
             change_pic.setOnClickListener(this);
             loadData();
             return rootView;
+        }
+        @Override
+        public void onDestroy(){
+            image_was_uploaded = false;
+            super.onDestroy();
         }
         @Override
         public void onClick(View v) {
@@ -266,10 +270,11 @@ public class ProfileActivity extends ActionBarActivity {
                 if (status_code == 200) {
                     Global.saveUserToPhone(result, activity);
                     activity.finish(); //takes us back to MainActivity
+                    Toast.makeText(activity, "Profile updated.", Toast.LENGTH_SHORT).show();
                 } else{
                     Toast.makeText(activity, "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
                 }
-                Toast.makeText(activity, "Profile updated.", Toast.LENGTH_SHORT).show();
+                Log.v(result.toString(), " <<<<<<<<");
                 spinner.setVisibility(View.GONE);
                 faded_screen.setVisibility(View.GONE);
                 super.onPostExecute(result);

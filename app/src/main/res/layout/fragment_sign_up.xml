@@ -49,11 +49,10 @@
             xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="120dp"
             android:layout_height="120dp"
-            android:id="@+id/profile_pic"
             android:src="@drawable/single_pic"
             android:scaleType="centerCrop"
-            android:onClick="setProfilePic"
             app:riv_oval="true"
+            android:id="@+id/profile_pic"
             android:layout_centerInParent="true"
             />
 
@@ -61,7 +60,6 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/change_pic"
             android:gravity="center"
             android:textSize="20dp"
             android:alpha="0.8"
@@ -110,7 +108,6 @@
             android:id="@+id/password"
             android:hint="@string/password"
             android:ems="5"
-            android:maxLength="5"
             android:layout_marginBottom="-7dp"
             />
     </LinearLayout>

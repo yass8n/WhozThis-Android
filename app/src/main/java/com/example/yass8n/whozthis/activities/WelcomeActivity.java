@@ -27,28 +27,11 @@ public class WelcomeActivity extends ActionBarActivity {
         setContentView(R.layout.activity_welcome);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment())
+                    .add(R.id.container, new PlaceholderFragment(), "WELCOME")
                     .commit();
         }
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_welcome, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        return super.onOptionsItemSelected(item);
-    }
     //this is called whenever main activity is created so we can access the static variable "currennt_user"
     //from anywhere in the app
     public static void setCurrentUser(String phone, String first, String last, String filename, boolean filename_exists, int user_id) {
@@ -80,15 +63,18 @@ public class WelcomeActivity extends ActionBarActivity {
         @Override
         public void onClick(View v) {
             Fragment fragment = new Fragment();
+            String tag = "";
             if (v.getId() == R.id.sign_up){
                 fragment = new SignUpFragment();
+                tag = "SIGNUP";
             } else if (v.getId() == R.id.sign_in){
                 fragment = new SignInFragment();
+                tag = "SIGNIN";
             }
             // Insert the fragment by replacing any existing fragment
             FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction()
-                    .replace(R.id.container, fragment)
+                    .replace(R.id.container, fragment, tag)
                     .addToBackStack(null)
                     .commit();
         }

@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -84,20 +85,29 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment())
+                    .add(R.id.container, new PlaceholderFragment(), "MAIN")
                     .commit();
         }
         firebase.child("user_id").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
 //                Log.v(snapshot.getValue().toString(), "  <<<<<<<<");
-                Toast.makeText(MainActivity.this, "the value of user_id is " + snapshot.getValue().toString(), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(MainActivity.this, "the value of user_id is " + snapshot.getValue().toString(), Toast.LENGTH_SHORT).show();
             }
 
             @Override public void onCancelled(FirebaseError error) { }
 
         });
 //        startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
+    }
+    @Override
+    public void onBackPressed(){
+        //override back button when main activity fragment is showing
+            Fragment fragment = getSupportFragmentManager().findFragmentByTag("MAIN");
+            if (fragment.isVisible()) {
+            } else {
+                super.onBackPressed();
+            }
     }
 
     @Override

@@ -7,10 +7,18 @@ package com.example.yass8n.whozthis.objects;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.util.Log;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import org.json.JSONObject;
+
+import java.io.InputStream;
 
 public class Global extends Application {
     public static final String AWS_URL = "http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/";
