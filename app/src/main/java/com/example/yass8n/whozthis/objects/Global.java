@@ -43,6 +43,7 @@ public class Global extends Application {
             String first = user.getString("first_name");
             String last = user.getString("last_name");
             String phone = user.getString("phone");
+            String filename = user.getString("filename");
 
             SharedPreferences sharedpreferences = activity.getSharedPreferences("user", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedpreferences.edit();
@@ -52,6 +53,7 @@ public class Global extends Application {
             editor.putString("first", first);
             editor.putString("last", last);
             editor.putString("phone", phone);
+            editor.putString("filename", filename);
             editor.commit();
         }catch (Exception e){
             Log.e(e.toString(), " Exception in Global ");

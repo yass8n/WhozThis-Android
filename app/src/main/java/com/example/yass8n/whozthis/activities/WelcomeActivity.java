@@ -53,7 +53,7 @@ public class WelcomeActivity extends ActionBarActivity {
     //from anywhere in the app
     public static void setCurrentUser(String phone, String first, String last, String filename, int user_id){
         current_user.phone = phone;
-        current_user.filename = "";
+        current_user.filename = filename;
         current_user.first_name = first;
         current_user.last_name = last;
         current_user.user_id = user_id;

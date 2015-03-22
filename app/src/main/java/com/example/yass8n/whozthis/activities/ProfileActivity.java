@@ -45,7 +45,9 @@ import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -59,6 +61,7 @@ import java.io.InputStreamReader;
 public class ProfileActivity extends ActionBarActivity {
     public static Context context;
     public static Activity activity;
+    public String base64Bitmap;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,16 +74,9 @@ public class ProfileActivity extends ActionBarActivity {
                     .commit();
         }
 
-//        ContentValues values = new ContentValues();
-//
-//        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
-//        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-//        values.put(MediaStore.MediaColumns.DATA, R.drawable.ic_launcher);
-//
-//        context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-        Bitmap icon = BitmapFactory.decodeResource(context.getResources(),
-                R.drawable.ic_launcher);
-        MediaStore.Images.Media.insertImage(getContentResolver(), icon, "ic_launcher" , "testing");
+//        Bitmap icon = BitmapFactory.decodeResource(context.getResources(),
+//                R.drawable.ic_launcher);
+//        MediaStore.Images.Media.insertImage(getContentResolver(), icon, "ic_launcher" , "testing");
 
     }
 
@@ -157,8 +153,14 @@ public class ProfileActivity extends ActionBarActivity {
             if (requestCode == SELECT_IMAGE) {
                 if (resultCode == Activity.RESULT_OK) {
                     Uri selectedImage = data.getData();
-//                    your_selected_image = decodeUri(selectedImage);
-                    profile_pic.setImageURI(selectedImage);
+                    profile_pic.setImageURI(selectedImage); //sets the image so the user can see what it looks like on the imageView
+                    try {
+                        InputStream image_stream = getActivity().getContentResolver().openInputStream(selectedImage);
+                        profile_pic_bitmap = BitmapFactory.decodeStream(image_stream );
+                        profile_pic.setImageBitmap(profile_pic_bitmap);
+                    } catch (Exception e){
+                        Log.e(e.toString(), " EXCEPTION");
+                    }
                 }
             }
         }
@@ -175,9 +177,9 @@ public class ProfileActivity extends ActionBarActivity {
                 l_name.setText(last.substring(0, 1).toUpperCase() + last.substring(1));
             }
 
-            if (!Global.empty("")) {
+            if (!Global.empty(WelcomeActivity.current_user.filename)) {
                 Picasso.with(getActivity())
-                        .load("")
+                        .load(WelcomeActivity.current_user.filename)
                         .into(profile_pic);
             } else {
                 profile_pic.setImageResource(R.drawable.single_pic);
@@ -204,38 +206,16 @@ public class ProfileActivity extends ActionBarActivity {
 
                     HttpClient httpClient = new DefaultHttpClient();
                     HttpContext localContext = new BasicHttpContext();
-                    HttpPut httpPut = new HttpPut("http://10.0.2.2:3000/api/v1/users/20" /*+ Integer.toString(WelcomeActivity.current_user.user_id)*/);
+                    HttpPut httpPut = new HttpPut(Global.AWS_URL + "users/" + Integer.toString(WelcomeActivity.current_user.user_id));
                     httpPut.setHeader("Accept", "application/json");
                     httpPut.setHeader("Content-type", "application/json");
 
-//                    MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-
-                    // setting image to binary
-//                    profile_pic.buildDrawingCache();
-//                    Bitmap immagex= BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri));
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//                    immagex.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                    byte[] b = baos.toByteArray();
-                    String imageEncoded = Base64.encodeToString(b,Base64.DEFAULT);
-
-                    Log.e("LOOK", imageEncoded);
-
-//                    profile_pic_bitmap = profile_pic.getDrawingCache();
-//                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//                    profile_pic_bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-//                    byte[] data = stream.toByteArray();
-//                    String encoded = Base64.encodeToString(data, Base64.DEFAULT);
-
-//                    entity.addPart("image", new ByteArrayBody(data, "profile_pic.png"));
-
-//                    need to actually get number passed from previous view
-//                    entity.addPart("first", new StringBody(first_name));
-//                    entity.addPart("last", new StringBody(last_name));
-//
-//                    httpPut.setEntity(entity);
-
-//                    HttpResponse response = httpClient.execute(httpPost, localContext);
-                    httpPut.setEntity(new StringEntity("{\"user\":{\"first_name\":\"" + first_name + "\",\"last_name\":\"" + last_name + "\", \"picture\":\"" + imageEncoded + "\"}}"));
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    profile_pic_bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    byte[] data = stream.toByteArray();
+                    String encoded = Base64.encodeToString(data, Base64.DEFAULT);
+                    JSONObject jsonBody = new JSONObject("{\"user\":{\"id\":\"" + Integer.toString(WelcomeActivity.current_user.user_id) + "\", \"first_name\":\"" + first_name + "\",\"last_name\":\"" + last_name + "\",\"filename\":\"" + encoded.toString() + "\"}}");
+                    httpPut.setEntity(new StringEntity(jsonBody.toString()));
 
                     HttpResponse response = httpClient.execute(httpPut, localContext);
                     status_code = response.getStatusLine().getStatusCode();
@@ -280,10 +260,9 @@ public class ProfileActivity extends ActionBarActivity {
             protected void onPostExecute(JSONObject result) {
                 if (status_code == 200) {
                     Global.saveUserToPhone(result, activity);
-//                    Toast.makeText(activity, "Profile Saved", Toast.LENGTH_SHORT).show();
                     activity.finish(); //takes us back to MainActivity
                 } else{
-//                    Toast.makeText(activity, "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(activity, "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
                 }
 
                 Toast.makeText(activity, result.toString(), Toast.LENGTH_LONG).show();

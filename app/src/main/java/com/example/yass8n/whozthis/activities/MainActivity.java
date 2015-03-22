@@ -139,7 +139,7 @@ public class MainActivity extends ActionBarActivity {
             final String signed_in = user.getString("signed_in", null);
             if (signed_in.equals("true")) {
                 WelcomeActivity.setCurrentUser(user.getString("phone", null), user.getString("first", null),
-                        user.getString("last", null), "", Integer.parseInt(user.getString("user_id", null)));
+                        user.getString("last", null), user.getString("filename", null), Integer.parseInt(user.getString("user_id", null)));
                 //also need to make sure the modal removes the current user
                 result =  true;
             }
