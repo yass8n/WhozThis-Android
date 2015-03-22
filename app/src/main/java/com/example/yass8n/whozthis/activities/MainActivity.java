@@ -179,7 +179,6 @@ public class MainActivity extends ActionBarActivity {
                 HttpContext localContext = new BasicHttpContext();
                 HttpGet httpGet = new HttpGet(Global.AWS_URL + "v1/users/stream/" + Integer.toString(WelcomeActivity.current_user.user_id));
 
-
                 HttpResponse response = httpClient.execute(httpGet, localContext);
                 HttpEntity response_entity = response.getEntity();
 
