@@ -121,6 +121,7 @@ public class ProfileActivity extends ActionBarActivity {
         private static TextView change_pic;
         private static ProgressBar spinner;
         private static ImageView faded_screen;
+        private static boolean image_was_uploaded = false;
         public PlaceholderFragment() {
         }
 
@@ -152,13 +153,15 @@ public class ProfileActivity extends ActionBarActivity {
             super.onActivityResult(requestCode, resultCode, data);
             if (requestCode == SELECT_IMAGE) {
                 if (resultCode == Activity.RESULT_OK) {
-                    Uri selectedImage = data.getData();
-                    profile_pic.setImageURI(selectedImage); //sets the image so the user can see what it looks like on the imageView
                     try {
+                        Uri selectedImage = data.getData();
+                        profile_pic.setImageURI(selectedImage); //sets the image so the user can see what it looks like on the imageView
                         InputStream image_stream = getActivity().getContentResolver().openInputStream(selectedImage);
                         profile_pic_bitmap = BitmapFactory.decodeStream(image_stream );
                         profile_pic.setImageBitmap(profile_pic_bitmap);
+                        image_was_uploaded = true;
                     } catch (Exception e){
+                        Toast.makeText(getActivity(), "Failed to upload photo.", Toast.LENGTH_SHORT).show();
                         Log.e(e.toString(), " EXCEPTION");
                     }
                 }
@@ -206,14 +209,16 @@ public class ProfileActivity extends ActionBarActivity {
 
                     HttpClient httpClient = new DefaultHttpClient();
                     HttpContext localContext = new BasicHttpContext();
-                    HttpPut httpPut = new HttpPut(Global.AWS_URL + "users/" + Integer.toString(WelcomeActivity.current_user.user_id));
+                    HttpPut httpPut = new HttpPut(Global.AWS_URL + "v1/users/" + Integer.toString(WelcomeActivity.current_user.user_id));
                     httpPut.setHeader("Accept", "application/json");
                     httpPut.setHeader("Content-type", "application/json");
-
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    profile_pic_bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                    byte[] data = stream.toByteArray();
-                    String encoded = Base64.encodeToString(data, Base64.DEFAULT);
+                    String encoded = "";
+                    if (image_was_uploaded) {
+                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        profile_pic_bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                        byte[] data = stream.toByteArray();
+                        encoded = Base64.encodeToString(data, Base64.DEFAULT);
+                    }
                     JSONObject jsonBody = new JSONObject("{\"user\":{\"id\":\"" + Integer.toString(WelcomeActivity.current_user.user_id) + "\", \"first_name\":\"" + first_name + "\",\"last_name\":\"" + last_name + "\",\"filename\":\"" + encoded.toString() + "\"}}");
                     httpPut.setEntity(new StringEntity(jsonBody.toString()));
 
@@ -264,8 +269,7 @@ public class ProfileActivity extends ActionBarActivity {
                 } else{
                     Toast.makeText(activity, "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
                 }
-
-                Toast.makeText(activity, result.toString(), Toast.LENGTH_LONG).show();
+                Toast.makeText(activity, "Profile updated.", Toast.LENGTH_SHORT).show();
                 spinner.setVisibility(View.GONE);
                 faded_screen.setVisibility(View.GONE);
                 super.onPostExecute(result);

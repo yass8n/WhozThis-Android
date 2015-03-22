@@ -51,14 +51,13 @@ public class WelcomeActivity extends ActionBarActivity {
     }
     //this is called whenever main activity is created so we can access the static variable "currennt_user"
     //from anywhere in the app
-    public static void setCurrentUser(String phone, String first, String last, String filename, int user_id){
+    public static void setCurrentUser(String phone, String first, String last, String filename, boolean filename_exists, int user_id) {
         current_user.phone = phone;
-        current_user.filename = filename;
         current_user.first_name = first;
         current_user.last_name = last;
         current_user.user_id = user_id;
+        current_user.filename = (filename_exists ? filename : "");
     }
-
     /**
      * A placeholder fragment containing a simple view.
      */

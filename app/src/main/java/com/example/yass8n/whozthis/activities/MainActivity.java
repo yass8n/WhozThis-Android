@@ -138,8 +138,14 @@ public class MainActivity extends ActionBarActivity {
         if (user.contains("signed_in")) {
             final String signed_in = user.getString("signed_in", null);
             if (signed_in.equals("true")) {
+                String filename = user.getString("filename", null);
+                boolean filename_exists = true;
+                if (Global.empty(filename)){
+                    filename_exists = false;
+                }
                 WelcomeActivity.setCurrentUser(user.getString("phone", null), user.getString("first", null),
-                        user.getString("last", null), user.getString("filename", null), Integer.parseInt(user.getString("user_id", null)));
+                        user.getString("last", null), "http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/images/"+ filename,
+                        filename_exists, Integer.parseInt(user.getString("user_id", null)));
                 //also need to make sure the modal removes the current user
                 result =  true;
             }
