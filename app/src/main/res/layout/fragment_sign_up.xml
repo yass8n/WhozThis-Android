@@ -1,46 +1,133 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.yass8n.gather.SignUpActivity"
+    android:orientation="vertical"
+    android:gravity="center_horizontal">
+
+    <TextView
+        android:text="@string/sign_up_heading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="30dp"
+        android:textStyle="bold"
+        android:gravity="center|top"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="25dp"
+        android:textColor="@color/dark_gray"
+        />
+
+    <TextView
+        android:text="@string/sign_up_desc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginRight="25dp"
+        android:layout_marginLeft="25dp"
+        android:textSize="15dp"
+        android:textColor="@color/dark_gray"
+        />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="135dp"
+        >
+
+        <com.makeramen.RoundedImageView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="125dp"
+            android:layout_height="125dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/white"
+            android:clickable="true"
+            app:riv_oval="true"
+            android:layout_centerInParent="true"
+            />
+
+
+        <com.makeramen.RoundedImageView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:id="@+id/profile_pic"
+            android:src="@drawable/single_pic"
+            android:scaleType="centerCrop"
+            android:onClick="setProfilePic"
+            app:riv_oval="true"
+            android:layout_centerInParent="true"
+            />
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/change_pic"
+            android:gravity="center"
+            android:textSize="20dp"
+            android:alpha="0.8"
+            />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="10dp"
+        >
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:inputType="textPersonName"
+            android:hint="First name"
+            android:ems="10"
+            android:id="@+id/first_name"
+            android:paddingTop="7dp"
+            />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:inputType="textPersonName"
+            android:id="@+id/last_name"
+            android:hint="Last name"
+            android:ems="10"
+            />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:id="@+id/phone"
+            android:hint="@string/phone_number"
+            android:ems="5"
+            android:maxLength="11"
+            android:layout_marginBottom="-7dp"
+            />
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:id="@+id/password"
+            android:hint="@string/password"
+            android:ems="5"
+            android:maxLength="5"
+            android:layout_marginBottom="-7dp"
+            />
+    </LinearLayout>
 
 
     <Button
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="10dp"
+        android:background="@color/green"
+        android:textColor="@color/white"
+        android:gravity="center"
+        android:text="@string/sign_up"
+        android:textSize="20dp"
         android:id="@+id/sign_up"
-        android:hint="@string/sign_up"/>
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:hint="@string/phone_number"
-        android:id="@+id/phone"/>
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:hint="@string/password"
-        android:id="@+id/password"/>
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:hint="@string/first_name"
-        android:id="@+id/first_name"/>
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:hint="Last Name"
-        android:id="@+id/last_name"/>
-
-    <com.makeramen.RoundedImageView
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:src="@drawable/ic_launcher"
-        android:id="@+id/profile_pic"
-        android:scaleType="fitCenter"
-        android:layout_width="125dp"
-        android:layout_height="125dp"
-        app:riv_corner_radius="30dip"
-        app:riv_border_width="2dip"
-        app:riv_border_color="@color/white"
-        app:riv_mutate_background="true"
-        app:riv_oval="true" />
+        />
 
 </LinearLayout>

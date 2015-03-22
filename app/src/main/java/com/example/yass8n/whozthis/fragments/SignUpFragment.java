@@ -37,6 +37,7 @@ import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -73,6 +74,7 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
         sign_up_button.setOnClickListener(SignUpFragment.this);
         TelephonyManager tMgr = (TelephonyManager)getActivity().getSystemService(Context.TELEPHONY_SERVICE);
         users_phone_number = User.stripPhone(tMgr.getLine1Number());
+        phone.setText(users_phone_number);
         Toast.makeText(getActivity(), users_phone_number, Toast.LENGTH_SHORT).show();
         return rootView;
     }
@@ -84,14 +86,30 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
         p_word = password.getText().toString();
         if (v.getId() == R.id.sign_up){
             if(Global.empty(p_num) || Global.empty(f_name) || Global.empty(l_name) || Global.empty(p_word)){
-                Toast.makeText(getActivity(), "Please fill in all the fields before proceeding", Toast.LENGTH_LONG).show();
-//            } else if (!users_phone_number.equals(p_num)) {
-//                Toast.makeText(getActivity(), "Sorry, you can only Sign up with your own phone number.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "Please fill in all the fields before proceeding", Toast.LENGTH_SHORT).show();
+            } else if (!users_phone_number.equals(User.stripPhone(p_num))) {
+                Toast.makeText(getActivity(), "Sorry, you can only Sign up with your own phone number.", Toast.LENGTH_LONG).show();
+            } else if (!isInteger(p_num)) {
+                Toast.makeText(getActivity(), "Phone number must be all digits", Toast.LENGTH_LONG).show();
+            } else if (p_num.length() != 10 && p_num.length() != 11) {
+                Toast.makeText(getActivity(), "Phone number must be 10 or 11 digits", Toast.LENGTH_LONG).show();
             } else {
                 SignUpAPI task = new SignUpAPI();
                 task.execute();
             }
+        } else if (v.getId() == R.id.change_pic){
+
         }
+    }
+
+    public static boolean isInteger(String s) {
+        try {
+            Long.parseLong(s);
+        } catch(NumberFormatException e) {
+            return false;
+        }
+        // only got here if we didn't return false
+        return true;
     }
 
     public class SignUpAPI extends AsyncTask<String, Void, JSONObject> {
@@ -130,7 +148,7 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
 
                 StringBuilder sb = new StringBuilder();
 
-                httpPost.setEntity(new StringEntity("{\"user\":{\"password\":\"" + p_word + "\",\"phone\":\"" + p_num + "\",\"first_name\":\"" + f_name + "\",\"last_name\":\"" + l_name + "\"}}"));
+                httpPost.setEntity(new StringEntity("{\"user\":{\"password\":\"" + p_word + "\",\"phone\":\"" + User.stripPhone(p_num) + "\",\"first_name\":\"" + f_name + "\",\"last_name\":\"" + l_name + "\"}}"));
 //                httpPost.setEntity(new StringEntity("{\"user\":{\"password\":\"aa\",\"phone\":\"aa\",\"first_name\":\"aa\",\"last_name\":\"aa\"}}"));
 //                entity.addPart("user[password]", new StringBody(p_word));
 //                entity.addPart("user[phone]", new StringBody(p_num));
@@ -183,8 +201,18 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
                 Global.saveUserToPhone(result, getActivity());
                 getActivity().startActivity(new Intent(getActivity(), MainActivity.class));
                 super.onPostExecute(result);
-            } else {
-                Toast.makeText(getActivity(), "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
+            } else if (status_code == 422){
+                if (result.has("phone")){
+                    try {
+                        JSONArray phone = new JSONArray(result.getString("phone"));
+                        Toast.makeText(getActivity(), "Phone number "+phone.getString(0), Toast.LENGTH_LONG).show();
+                    } catch (Exception e){
+                        Log.e(e.toString(), "Exception phone");
+                    }
+                }
+                else {
+                    Toast.makeText(getActivity(), "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
+                }
             }
 //           emulator phone number 5555215554
         }
