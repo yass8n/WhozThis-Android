@@ -60,7 +60,6 @@ public class SignInFragment extends Fragment implements View.OnClickListener {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_sign_in, container, false);
         sign_in_button = (Button) rootView.findViewById(R.id.sign_in);
-        sign_in_button.setBackgroundColor(getResources().getColor(R.color.green));
         phone = (EditText) rootView.findViewById(R.id.phone);
         password = (EditText) rootView.findViewById(R.id.password);
         setTextChangedListeners();
@@ -85,11 +84,11 @@ public class SignInFragment extends Fragment implements View.OnClickListener {
     }
     public void checkAllFields(){
         setAllFields();
-//        if( !Global.empty(p_num) && !Global.empty(p_word) && p_num.length() == 10){
-//            sign_in_button.setBackgroundColor(getResources().getColor(R.color.green));
-//        } else{
-//            sign_in_button.setBackgroundColor(getResources().getColor(R.color.app_green));
-//        }
+        if( !Global.empty(p_num) && !Global.empty(p_word)/* && p_num.length() == 10*/){
+            sign_in_button.setBackgroundColor(getResources().getColor(R.color.green));
+        } else{
+            sign_in_button.setBackgroundColor(getResources().getColor(R.color.app_green));
+        }
     }
     public void setAllFields(){
         p_num = phone.getText().toString();
