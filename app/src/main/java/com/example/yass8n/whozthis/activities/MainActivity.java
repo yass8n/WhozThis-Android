@@ -429,39 +429,39 @@ public class MainActivity extends ActionBarActivity {
 
                 return conversation_view;
             }
-            private void animateAndDelete(final Conversation conversation, View v, View pic) {
-                pic.setVisibility(View.GONE);
-                final int initialHeight = v.getMeasuredHeight();
+            private void animateAndDelete(final Conversation conversation, View convo, View pic) {
+                final int initialHeightConvo = convo.getMeasuredHeight();
+                final int initialHeightPic = pic.getMeasuredHeight();
                 Animation.AnimationListener al = new Animation.AnimationListener() {
                     @Override
                     public void onAnimationEnd(Animation arg0) {
-//                        int index = list.index;
-//                        checked_lists_array.remove(list);
-//                        objectsArrayForAdapter.remove(index);
-//                        objectsArrayOriginal.remove(index);
-//                        MainActivity.lists_array.remove(index - 1);
+                        conversations_array.remove(conversation);
 //                        updateIndicies(index);
-//                        conversatons_adapter.notifyDataSetChanged();
+                        conversatons_adapter.notifyDataSetChanged();
                     }
                     @Override public void onAnimationRepeat(Animation animation) {}
                     @Override public void onAnimationStart(Animation animation) {
                     }
                 };
 
-                collapse(initialHeight, v, al);
+                collapse(initialHeightConvo, initialHeightPic, convo, al, pic);
             }
 
-            private void collapse(final int initialHeight, final View v, Animation.AnimationListener al) {
+            private void collapse(final int initialHeightConvo, final int initialHeightPic, final View convo, Animation.AnimationListener al, final View pic) {
                 Animation anim = new Animation() {
                     @Override
                     protected void applyTransformation(float interpolatedTime, Transformation t) {
                         if (interpolatedTime == 1) {
-                            v.getLayoutParams().height = initialHeight;
-                            v.requestLayout();
+                            pic.getLayoutParams().height = initialHeightPic;
+                            pic.requestLayout();
+                            convo.getLayoutParams().height = initialHeightConvo;
+                            convo.requestLayout();
                         }
                         else {
-                            v.getLayoutParams().height = initialHeight - (int)(initialHeight * interpolatedTime) - 1;
-                            v.requestLayout();
+                            pic.getLayoutParams().height = initialHeightPic - (int)(initialHeightPic * interpolatedTime) - 1;
+                            pic.requestLayout();
+                            convo.getLayoutParams().height = initialHeightConvo - (int)(initialHeightConvo * interpolatedTime) - 1;
+                            convo.requestLayout();
                         }
                     }
 
@@ -475,7 +475,7 @@ public class MainActivity extends ActionBarActivity {
                     anim.setAnimationListener(al);
                 }
                 anim.setDuration(600);
-                v.startAnimation(anim);
+                convo.startAnimation(anim);
             }
 
             public class ShowUsersModal extends AsyncTask<Conversation, String, ArrayList<User>> {
