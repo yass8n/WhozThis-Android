@@ -10,7 +10,7 @@ tools:context="com.example.yass8n.whozthis.activities.WelcomeActivity$Placeholde
 
     <EditText
         android:layout_width="match_parent"
-        android:textSize="18dp"
+        android:textSize="18sp"
         android:hint="Phone Number"
         android:id="@+id/phone"
         android:layout_marginBottom="1dp"
@@ -19,9 +19,10 @@ tools:context="com.example.yass8n.whozthis.activities.WelcomeActivity$Placeholde
 
     <EditText
         android:layout_width="match_parent"
-        android:textSize="18dp"
+        android:textSize="18sp"
         android:hint="Password"
         android:id="@+id/password"
+        android:inputType="textPassword"
         android:background="@color/white"
         android:layout_marginBottom="1dp"
         android:layout_height="40dp" />
@@ -34,7 +35,7 @@ tools:context="com.example.yass8n.whozthis.activities.WelcomeActivity$Placeholde
         android:background="@color/app_green"
         android:gravity="center"
         android:text="@string/sign_in"
-        android:textSize="20dp"
+        android:textSize="20sp"
         android:id="@+id/sign_in"
         android:textColor="@color/white" />
 </LinearLayout>

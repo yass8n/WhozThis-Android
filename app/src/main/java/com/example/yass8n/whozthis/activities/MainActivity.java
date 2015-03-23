@@ -24,6 +24,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.Transformation;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -103,11 +105,11 @@ public class MainActivity extends ActionBarActivity {
     @Override
     public void onBackPressed(){
         //override back button when main activity fragment is showing
-            Fragment fragment = getSupportFragmentManager().findFragmentByTag("MAIN");
-            if (fragment.isVisible()) {
-            } else {
-                super.onBackPressed();
-            }
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag("MAIN");
+        if (fragment.isVisible()) {
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
@@ -341,7 +343,6 @@ public class MainActivity extends ActionBarActivity {
             class ConversationViewHolder {
                 TextView date;
                 TextView title;
-                ImageView picture;
                 TextView last_message;
             }
 
@@ -371,7 +372,6 @@ public class MainActivity extends ActionBarActivity {
                     conversation_view = inflater.inflate(R.layout.conversation_fragment, parent, false);
                     view_holder.date = (TextView) conversation_view.findViewById(R.id.date);
                     view_holder.title = (TextView) conversation_view.findViewById(R.id.title);
-                    view_holder.picture = (ImageView) conversation_view.findViewById(R.id.profile_pic);
                     view_holder.last_message = (TextView) conversation_view.findViewById(R.id.last_message);
                     conversation_view.setTag(view_holder);
                 }
@@ -382,7 +382,7 @@ public class MainActivity extends ActionBarActivity {
                 holder.date.setText(conversation.getDate());
                 holder.title.setText(conversation.title);
                 holder.last_message.setText("Put the last message in here");
-                RelativeLayout image = (RelativeLayout) conversation_view.findViewById(R.id.users_modal);
+                final RelativeLayout image = (RelativeLayout) conversation_view.findViewById(R.id.users_modal);
                 ImageView modal_pic = (ImageView) image.findViewById(R.id.modal_pic);
                 if (conversation.users.size() > 2){
                     modal_pic.setImageResource(R.drawable.group_pic);
@@ -403,9 +403,81 @@ public class MainActivity extends ActionBarActivity {
                         Toast.makeText(getActivity(), "LEON: This should open up a new activity called 'MessageActivity' that will show all the messages for this conversation", Toast.LENGTH_LONG).show();
                     }
                 });
+                ImageView trash = (ImageView) conversation_view.findViewById(R.id.delete);
+                final View[] conversation_view_arr= new View[1];
+                conversation_view_arr[0] = conversation_view; //putting the view in an array so I can access it in the function below without declaring it as final
+                trash.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        new AlertDialog.Builder(getActivity())
+                                .setIcon(android.R.drawable.ic_dialog_alert)
+                                .setTitle("Delete Conversation")
+                                .setMessage("Are you sure you want to delete this conversation?")
+                                .setPositiveButton("Yes", new DialogInterface.OnClickListener()
+                                {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+//                                        InviteDeleteAPI invite_api = new InviteDeleteAPI();
+//                                        invite_api.execute();
+                                        animateAndDelete(conversation, conversation_view_arr[0], image);
+                                    }
+                                })
+                                .setNegativeButton("No", null)
+                                .show();
+                    }
+                });
 
                 return conversation_view;
             }
+            private void animateAndDelete(final Conversation conversation, View v, View pic) {
+                pic.setVisibility(View.GONE);
+                final int initialHeight = v.getMeasuredHeight();
+                Animation.AnimationListener al = new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationEnd(Animation arg0) {
+//                        int index = list.index;
+//                        checked_lists_array.remove(list);
+//                        objectsArrayForAdapter.remove(index);
+//                        objectsArrayOriginal.remove(index);
+//                        MainActivity.lists_array.remove(index - 1);
+//                        updateIndicies(index);
+//                        conversatons_adapter.notifyDataSetChanged();
+                    }
+                    @Override public void onAnimationRepeat(Animation animation) {}
+                    @Override public void onAnimationStart(Animation animation) {
+                    }
+                };
+
+                collapse(initialHeight, v, al);
+            }
+
+            private void collapse(final int initialHeight, final View v, Animation.AnimationListener al) {
+                Animation anim = new Animation() {
+                    @Override
+                    protected void applyTransformation(float interpolatedTime, Transformation t) {
+                        if (interpolatedTime == 1) {
+                            v.getLayoutParams().height = initialHeight;
+                            v.requestLayout();
+                        }
+                        else {
+                            v.getLayoutParams().height = initialHeight - (int)(initialHeight * interpolatedTime) - 1;
+                            v.requestLayout();
+                        }
+                    }
+
+                    @Override
+                    public boolean willChangeBounds() {
+                        return true;
+                    }
+                };
+
+                if (al!=null) {
+                    anim.setAnimationListener(al);
+                }
+                anim.setDuration(600);
+                v.startAnimation(anim);
+            }
+
             public class ShowUsersModal extends AsyncTask<Conversation, String, ArrayList<User>> {
                 private float user_height;
                 private  AlertDialog.Builder builderSingle;

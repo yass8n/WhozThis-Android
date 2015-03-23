@@ -8,37 +8,39 @@
         android:layout_width="75dp"
         android:layout_height="75dp"
         android:layout_marginLeft="5dp"
-        android:layout_gravity="left|center"
+        android:layout_marginStart="5dp"
+        android:layout_gravity="start|center"
         android:id="@+id/users_modal"
         >
-    <com.makeramen.RoundedImageView
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="65dp"
-        android:layout_height="65dp"
-        android:src="@color/lighter_gray"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        app:riv_oval="true"
-        app:riv_corner_radius="30dip"
-        android:scaleType="fitCenter"
-        />
-    <com.makeramen.RoundedImageView
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:id="@+id/modal_pic"
-        android:src="@drawable/single_pic"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        app:riv_oval="true"
-        app:riv_corner_radius="30dip"
-        android:scaleType="fitCenter"
-        />
+        <com.makeramen.RoundedImageView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="65dp"
+            android:layout_height="65dp"
+            android:src="@color/lighter_gray"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            app:riv_oval="true"
+            app:riv_corner_radius="30dip"
+            android:scaleType="fitCenter"
+            />
+        <com.makeramen.RoundedImageView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:id="@+id/modal_pic"
+            android:src="@drawable/single_pic"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            app:riv_oval="true"
+            app:riv_corner_radius="30dip"
+            android:scaleType="fitCenter"
+            />
     </RelativeLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginLeft="5dp"
+        android:layout_marginStart="5dp"
         android:weightSum="95"
         android:orientation="vertical">
         <TextView
@@ -46,25 +48,40 @@
             android:layout_height="0dp"
             android:id="@+id/date"
             android:text="date"
-            android:textSize="12dp"
-            android:gravity="right"
+            android:textSize="12sp"
+            android:gravity="end"
             android:layout_weight="15"
-            android:layout_marginRight="5dp"/>
+            android:layout_marginRight="5dp"
+            android:layout_marginEnd="5dp"/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:id="@+id/title"
             android:text="title"
-            android:textSize="20dp"
+            android:textSize="20sp"
             android:layout_weight="30"/>
-        <TextView
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:id="@+id/last_message"
-            android:text="last message"
-            android:textSize="18dp"
-            android:layout_weight="50"/>
-        </LinearLayout>
+            android:layout_weight="50">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/last_message"
+                android:text="last message"
+                android:textSize="18sp"
+                />
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:id="@+id/delete"
+                android:background="@drawable/trash"
+                android:layout_alignEnd="@+id/last_message"
+                android:layout_alignRight="@+id/last_message"
+                android:layout_alignParentBottom="true"
+                />
+        </RelativeLayout>
+    </LinearLayout>
 
 
 </LinearLayout>

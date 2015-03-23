@@ -11,7 +11,7 @@
 
         <Button
             android:layout_width="match_parent"
-            android:textSize="18dp"
+            android:textSize="18sp"
             android:id="@+id/sign_up"
             android:text="SIGN UP"
             android:background="@color/black"
@@ -20,7 +20,7 @@
 
         <Button
             android:layout_width="match_parent"
-            android:textSize="18dp"
+            android:textSize="18sp"
             android:id="@+id/sign_in"
             android:text="SIGN IN"
             android:background="@color/black"

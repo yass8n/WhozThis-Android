@@ -9,7 +9,7 @@
         android:text="@string/sign_up_heading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="30dp"
+        android:textSize="30sp"
         android:textStyle="bold"
         android:gravity="center|top"
         android:layout_marginTop="15dp"
@@ -24,7 +24,7 @@
         android:gravity="center"
         android:layout_marginRight="25dp"
         android:layout_marginLeft="25dp"
-        android:textSize="15dp"
+        android:textSize="15sp"
         android:textColor="@color/dark_gray"
         />
 
@@ -61,7 +61,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:textSize="20dp"
+            android:textSize="20sp"
             android:alpha="0.8"
             />
 
@@ -72,6 +72,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingLeft="10dp"
+        android:paddingStart="10dp"
         >
 
         <EditText
@@ -97,6 +98,7 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:id="@+id/phone"
+            android:inputType="phone"
             android:hint="@string/phone_number"
             android:ems="5"
             android:maxLength="11"
@@ -106,6 +108,7 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:id="@+id/password"
+            android:inputType="textPassword"
             android:hint="@string/password"
             android:ems="5"
             android:layout_marginBottom="-7dp"
@@ -122,7 +125,7 @@
         android:background="@color/app_green"
         android:gravity="center"
         android:text="@string/sign_up"
-        android:textSize="20dp"
+        android:textSize="20sp"
         android:id="@+id/sign_up"
         android:textColor="@color/white" />
 
