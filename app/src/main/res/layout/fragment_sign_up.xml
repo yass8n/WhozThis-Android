@@ -119,12 +119,11 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:layout_marginTop="10dp"
-        android:background="@color/green"
-        android:textColor="@color/white"
+        android:background="@color/app_green"
         android:gravity="center"
         android:text="@string/sign_up"
         android:textSize="20dp"
         android:id="@+id/sign_up"
-        />
+        android:textColor="@color/white" />
 
 </LinearLayout>

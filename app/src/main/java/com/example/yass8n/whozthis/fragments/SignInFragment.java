@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -51,27 +53,59 @@ public class SignInFragment extends Fragment implements View.OnClickListener {
     private EditText password;
     private String p_num;
     private String p_word;
+    private Button sign_in_button;
     private static boolean PASSWORD_BASED_KEY = true;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_sign_in, container, false);
-        Button sign_in_button = (Button) rootView.findViewById(R.id.sign_in);
+        sign_in_button = (Button) rootView.findViewById(R.id.sign_in);
+        sign_in_button.setBackgroundColor(getResources().getColor(R.color.green));
         phone = (EditText) rootView.findViewById(R.id.phone);
         password = (EditText) rootView.findViewById(R.id.password);
+        setTextChangedListeners();
         sign_in_button.setOnClickListener(SignInFragment.this);
         return rootView;
+    }
+    public void setTextChangedListeners(){
+        phone.addTextChangedListener(new TextWatcher() {
+            public void afterTextChanged(Editable s) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                checkAllFields();
+            }
+        });
+        password.addTextChangedListener(new TextWatcher() {
+            public void afterTextChanged(Editable s) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                checkAllFields();
+            }
+        });
+    }
+    public void checkAllFields(){
+        setAllFields();
+//        if( !Global.empty(p_num) && !Global.empty(p_word) && p_num.length() == 10){
+//            sign_in_button.setBackgroundColor(getResources().getColor(R.color.green));
+//        } else{
+//            sign_in_button.setBackgroundColor(getResources().getColor(R.color.app_green));
+//        }
+    }
+    public void setAllFields(){
+        p_num = phone.getText().toString();
+        p_word = password.getText().toString();
     }
 
     @Override
     public void onClick(View v) {
-        p_num = phone.getText().toString();
-        p_word = password.getText().toString();
+        setAllFields();
         if (v.getId() == R.id.sign_in) {
             if (Global.empty(p_num) || Global.empty(p_word)) {
                 Toast.makeText(getActivity(), "Please fill in all the fields before proceeding.", Toast.LENGTH_LONG).show();
 //            } else if (!users_phone_number.equals(p_num)) {
 //                Toast.makeText(getActivity(), "Sorry, you can only Sign up with your own phone number.", Toast.LENGTH_LONG).show();
+//            } else if (p_num.length() != 10) {
+//                Toast.makeText(getActivity(), "Phone number must be 10 digits", Toast.LENGTH_LONG).show();
             } else {
                 SignInAPI task = new SignInAPI();
                 task.execute();

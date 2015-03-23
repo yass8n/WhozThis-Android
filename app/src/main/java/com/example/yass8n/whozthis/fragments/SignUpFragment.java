@@ -11,6 +11,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.telephony.TelephonyManager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -67,6 +69,7 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
     private String l_name;
     private String p_word;
     private Bitmap profile_pic_bitmap;
+    private Button sign_up_button;
     private boolean image_was_uploaded = false;
     String users_phone_number;
     @Override
@@ -76,9 +79,10 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
         password = (EditText)rootView.findViewById(R.id.password);
         first_name = (EditText)rootView.findViewById(R.id.first_name);
         last_name = (EditText)rootView.findViewById(R.id.last_name);
+        setTextChangedListeners();
         profile_pic = (ImageView)rootView.findViewById(R.id.profile_pic);
         profile_pic.setOnClickListener(this);
-        Button sign_up_button = (Button)rootView.findViewById(R.id.sign_up);
+        sign_up_button = (Button)rootView.findViewById(R.id.sign_up);
         sign_up_button.setOnClickListener(SignUpFragment.this);
         TelephonyManager tMgr = (TelephonyManager)getActivity().getSystemService(Context.TELEPHONY_SERVICE);
         users_phone_number = User.stripPhone(tMgr.getLine1Number());
@@ -86,13 +90,55 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
 //        Toast.makeText(getActivity(), users_phone_number, Toast.LENGTH_SHORT).show();
         return rootView;
     }
+    public void setTextChangedListeners(){
+        phone.addTextChangedListener(new TextWatcher() {
+            public void afterTextChanged(Editable s) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                checkAllFields();
+            }
+        });
+        first_name.addTextChangedListener(new TextWatcher() {
+            public void afterTextChanged(Editable s) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                checkAllFields();
+            }
+        });
+        last_name.addTextChangedListener(new TextWatcher() {
+            public void afterTextChanged(Editable s) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                checkAllFields();
+            }
 
-    @Override
-    public void onClick(View v) {
+        });
+        password.addTextChangedListener(new TextWatcher() {
+            public void afterTextChanged(Editable s) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                checkAllFields();
+            }
+        });
+    }
+    public void checkAllFields(){
+        setAllFields();
+        if( !Global.empty(p_num) && !Global.empty(f_name) && !Global.empty(l_name) && !Global.empty(p_word) && p_num.length() == 10){
+            sign_up_button.setBackgroundColor(getResources().getColor(R.color.green));
+        } else{
+            sign_up_button.setBackgroundColor(getResources().getColor(R.color.app_green));
+        }
+    }
+    public void setAllFields(){
         p_num = phone.getText().toString();
         f_name = first_name.getText().toString();
         l_name = last_name.getText().toString();
         p_word = password.getText().toString();
+    }
+
+    @Override
+    public void onClick(View v) {
+        setAllFields();
         if (v.getId() == R.id.sign_up){
             if(Global.empty(p_num) || Global.empty(f_name) || Global.empty(l_name) || Global.empty(p_word)){
                 Toast.makeText(getActivity(), "Please fill in all the fields before proceeding", Toast.LENGTH_SHORT).show();
@@ -100,8 +146,8 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
 //                Toast.makeText(getActivity(), "Sorry, you can only Sign up with your own phone number.", Toast.LENGTH_LONG).show();
             } else if (!isInteger(p_num)) {
                 Toast.makeText(getActivity(), "Phone number must be all digits", Toast.LENGTH_LONG).show();
-            } else if (p_num.length() != 10 && p_num.length() != 11) {
-                Toast.makeText(getActivity(), "Phone number must be 10 or 11 digits", Toast.LENGTH_LONG).show();
+            } else if (p_num.length() != 10) {
+                Toast.makeText(getActivity(), "Phone number must be 10 digits", Toast.LENGTH_LONG).show();
             } else {
                 SignUpAPI task = new SignUpAPI();
                 task.execute();

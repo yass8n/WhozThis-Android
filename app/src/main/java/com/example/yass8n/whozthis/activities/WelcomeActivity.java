@@ -13,6 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
 import android.widget.Button;
+import android.graphics.Color; // add to top of class
+
 
 import com.example.yass8n.whozthis.R;
 import com.example.yass8n.whozthis.fragments.SignInFragment;
@@ -55,6 +57,8 @@ public class WelcomeActivity extends ActionBarActivity {
             View rootView = inflater.inflate(R.layout.fragment_welcome, container, false);
             Button sign_up_button = (Button)rootView.findViewById(R.id.sign_up);
             Button sign_in_button = (Button)rootView.findViewById(R.id.sign_in);
+            sign_in_button.setTextColor(getResources().getColor(R.color.white));
+            sign_up_button.setTextColor(getResources().getColor(R.color.white));
             sign_up_button.setOnClickListener(this);
             sign_in_button.setOnClickListener(this);
             return rootView;

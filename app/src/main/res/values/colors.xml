@@ -25,4 +25,5 @@
     <color name="greenish_blue">#1abc9c</color>
     <color name="grayish">#7f8c8d</color>
     <color name="transparent">#00000000</color>
+    <color name="app_green">#C1F0C1</color>
 </resources>
