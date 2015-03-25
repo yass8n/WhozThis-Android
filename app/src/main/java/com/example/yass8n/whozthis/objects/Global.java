@@ -7,10 +7,18 @@ package com.example.yass8n.whozthis.objects;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.util.Log;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import org.json.JSONObject;
+
+import java.io.InputStream;
 
 public class Global extends Application {
     public static final String AWS_URL = "http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/";
@@ -43,6 +51,7 @@ public class Global extends Application {
             String first = user.getString("first_name");
             String last = user.getString("last_name");
             String phone = user.getString("phone");
+            String filename = user.getString("filename");
 
             SharedPreferences sharedpreferences = activity.getSharedPreferences("user", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedpreferences.edit();
@@ -52,6 +61,7 @@ public class Global extends Application {
             editor.putString("first", first);
             editor.putString("last", last);
             editor.putString("phone", phone);
+            editor.putString("filename", filename);
             editor.commit();
         }catch (Exception e){
             Log.e(e.toString(), " Exception in Global ");

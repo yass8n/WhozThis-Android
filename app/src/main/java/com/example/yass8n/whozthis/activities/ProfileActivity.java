@@ -1,16 +1,21 @@
 package com.example.yass8n.whozthis.activities;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -40,7 +45,9 @@ import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -54,6 +61,7 @@ import java.io.InputStreamReader;
 public class ProfileActivity extends ActionBarActivity {
     public static Context context;
     public static Activity activity;
+    public String base64Bitmap;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,8 +73,12 @@ public class ProfileActivity extends ActionBarActivity {
                     .add(R.id.container, new PlaceholderFragment())
                     .commit();
         }
-    }
 
+//        Bitmap icon = BitmapFactory.decodeResource(context.getResources(),
+//                R.drawable.ic_launcher);
+//        MediaStore.Images.Media.insertImage(getContentResolver(), icon, "ic_launcher" , "testing");
+
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -108,6 +120,7 @@ public class ProfileActivity extends ActionBarActivity {
         private static TextView change_pic;
         private static ProgressBar spinner;
         private static ImageView faded_screen;
+        private static boolean image_was_uploaded = false;
         public PlaceholderFragment() {
         }
 
@@ -117,13 +130,20 @@ public class ProfileActivity extends ActionBarActivity {
             View rootView = inflater.inflate(R.layout.fragment_profile, container, false);
             f_name = (EditText)rootView.findViewById(R.id.first_name);
             l_name = (EditText)rootView.findViewById(R.id.last_name);
-            profile_pic = (ImageView) rootView.findViewById(R.id.profile_pic);
             faded_screen = (ImageView) rootView.findViewById(R.id.faded);
-            change_pic = (TextView) rootView.findViewById(R.id.change_pic);
             spinner = (ProgressBar)rootView.findViewById(R.id.profile_progress);
             spinner.bringToFront();
+            profile_pic = (ImageView) rootView.findViewById(R.id.profile_pic);
+            change_pic = (TextView) rootView.findViewById(R.id.change_pic);
+            profile_pic.setOnClickListener(this);
+            change_pic.setOnClickListener(this);
             loadData();
             return rootView;
+        }
+        @Override
+        public void onDestroy(){
+            image_was_uploaded = false;
+            super.onDestroy();
         }
         @Override
         public void onClick(View v) {
@@ -135,11 +155,21 @@ public class ProfileActivity extends ActionBarActivity {
         @Override
         public void onActivityResult(int requestCode, int resultCode, Intent data) {
             super.onActivityResult(requestCode, resultCode, data);
-            if (requestCode == SELECT_IMAGE)
+            if (requestCode == SELECT_IMAGE) {
                 if (resultCode == Activity.RESULT_OK) {
-                    Uri selectedImage = data.getData();
-                    profile_pic.setImageURI(selectedImage);
+                    try {
+                        Uri selectedImage = data.getData();
+                        profile_pic.setImageURI(selectedImage); //sets the image so the user can see what it looks like on the imageView
+                        InputStream image_stream = getActivity().getContentResolver().openInputStream(selectedImage);
+                        profile_pic_bitmap = BitmapFactory.decodeStream(image_stream );
+                        profile_pic.setImageBitmap(profile_pic_bitmap);
+                        image_was_uploaded = true;
+                    } catch (Exception e){
+                        Toast.makeText(getActivity(), "Failed to upload photo.", Toast.LENGTH_SHORT).show();
+                        Log.e(e.toString(), " EXCEPTION");
+                    }
                 }
+            }
         }
 
         public void loadData() {
@@ -154,9 +184,9 @@ public class ProfileActivity extends ActionBarActivity {
                 l_name.setText(last.substring(0, 1).toUpperCase() + last.substring(1));
             }
 
-            if (!Global.empty("")) {
+            if (!Global.empty(WelcomeActivity.current_user.filename)) {
                 Picasso.with(getActivity())
-                        .load("")
+                        .load(WelcomeActivity.current_user.filename)
                         .into(profile_pic);
             } else {
                 profile_pic.setImageResource(R.drawable.single_pic);
@@ -186,19 +216,15 @@ public class ProfileActivity extends ActionBarActivity {
                     HttpPut httpPut = new HttpPut(Global.AWS_URL + "v1/users/" + Integer.toString(WelcomeActivity.current_user.user_id));
                     httpPut.setHeader("Accept", "application/json");
                     httpPut.setHeader("Content-type", "application/json");
-//                    MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-
-                    // setting image to binary
-//                    profile_pic.buildDrawingCache();
-//                    profile_pic_bitmap = profile_pic.getDrawingCache();
-//                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//                    profile_pic_bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-//                    byte[] data = stream.toByteArray();
-//
-//                    entity.addPart("image", new ByteArrayBody(data, "profile_pic.png"));
-
-
-                    httpPut.setEntity(new StringEntity("{\"user\":{\"first_name\":\"" + first_name + "\",\"last_name\":\"" + last_name + "\"}}"));
+                    String encoded = "";
+                    if (image_was_uploaded) {
+                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        profile_pic_bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                        byte[] data = stream.toByteArray();
+                        encoded = Base64.encodeToString(data, Base64.DEFAULT);
+                    }
+                    JSONObject jsonBody = new JSONObject("{\"user\":{\"id\":\"" + Integer.toString(WelcomeActivity.current_user.user_id) + "\", \"first_name\":\"" + first_name + "\",\"last_name\":\"" + last_name + "\",\"filename\":\"" + encoded.toString() + "\"}}");
+                    httpPut.setEntity(new StringEntity(jsonBody.toString()));
 
                     HttpResponse response = httpClient.execute(httpPut, localContext);
                     status_code = response.getStatusLine().getStatusCode();
@@ -243,11 +269,12 @@ public class ProfileActivity extends ActionBarActivity {
             protected void onPostExecute(JSONObject result) {
                 if (status_code == 200) {
                     Global.saveUserToPhone(result, activity);
-                    Toast.makeText(activity, "Profile Saved", Toast.LENGTH_SHORT).show();
                     activity.finish(); //takes us back to MainActivity
+                    Toast.makeText(activity, "Profile updated.", Toast.LENGTH_SHORT).show();
                 } else{
                     Toast.makeText(activity, "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
                 }
+                Log.v(result.toString(), " <<<<<<<<");
                 spinner.setVisibility(View.GONE);
                 faded_screen.setVisibility(View.GONE);
                 super.onPostExecute(result);

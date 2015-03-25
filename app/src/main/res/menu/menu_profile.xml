@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.yass8n.whozthis.activities.ProfileActivity">
     <item android:id="@+id/save" android:title="@string/save"
-        android:orderInCategory="99"
+        android:orderInCategory="99" app:showAsAction="always"
          />
     <item android:id="@+id/sign_out" android:title="@string/sign_out"
         android:orderInCategory="100" app:showAsAction="never" />

@@ -29,4 +29,12 @@ public class Conversation {
     public String getDate(){
         return this.date;
     }
+    @Override
+    public boolean equals(Object other){
+        if(other == null) return false;
+        if(other == this) return true;
+        if(!(other instanceof Conversation)) return false;
+        Conversation conversation = (Conversation)other;
+        return id == conversation.id;
+    }
 }
