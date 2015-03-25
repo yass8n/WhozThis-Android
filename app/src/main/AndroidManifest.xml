@@ -31,6 +31,10 @@
             android:name=".activities.ContactActivity"
             android:label="@string/title_activity_contact" >
         </activity>
+        <activity
+            android:name=".activities.NewMessages"
+            android:label="@string/title_activity_new_messages" >
+        </activity>
     </application>
 
 </manifest>
