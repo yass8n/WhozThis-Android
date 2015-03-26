@@ -22,6 +22,7 @@ import java.io.InputStream;
 
 public class Global extends Application {
     public static final String AWS_URL = "http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/";
+    public static final String LOCAL_URL = "http://10.0.2.2:3000/api/";
     public static final String FBASE_URL = "https://radiant-inferno-906.firebaseio.com/";
 
 

@@ -79,6 +79,7 @@ public class MainActivity extends ActionBarActivity {
     public static Firebase firebase;
     public static Context context;
     public static ArrayList<Conversation> conversations_array = new ArrayList<Conversation>();
+    public static int HEADER_ID = -1;
     //need the conversations array attached to the main activity so we can access it from other activities with "MainActivity.conversations_array"
 
 
@@ -87,8 +88,6 @@ public class MainActivity extends ActionBarActivity {
         //https://radiant-inferno-906.firebaseio.com   this is the URL where our data will be stored
         super.onCreate(savedInstanceState);
         context = this;
-        Log.v("asddddddddd".toString(), " <<<<<<<<<<<");
-
         Firebase.setAndroidContext(this);
         firebase = new Firebase("https://radiant-inferno-906.firebaseio.com/");
         setContentView(R.layout.activity_main);
@@ -584,7 +583,10 @@ public class MainActivity extends ActionBarActivity {
         @Override
         protected ArrayList<User> doInBackground(Conversation... c) {
             ArrayList<User> users_in_convo = new ArrayList<>();
-
+            User header = new User();
+            header.user_id = HEADER_ID;
+            header.first_name = "People in the conversation";
+            users_in_convo.add(header);
             for (int i = 0; i < c[0].users.size(); i++) {
                 users_in_convo.add(c[0].users.get(i));
             }
@@ -596,9 +598,6 @@ public class MainActivity extends ActionBarActivity {
         protected void onPostExecute(ArrayList<User> users_in_convo) {
             if( alertDialog != null && alertDialog.isShowing() ) return;
             adapter = new UsersAdapter(users_in_convo);
-            LayoutInflater inflater = getActivity().getLayoutInflater();
-            View header = inflater.inflate(R.layout.modal_header, null, false);
-            builderSingle.setCustomTitle(header); //setting the "Who's in" header
             builderSingle.setAdapter(adapter, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -646,24 +645,73 @@ public class MainActivity extends ActionBarActivity {
             return position;
         }
 
+        class UserListViewHolder {
+            TextView full_name;
+            ImageView display_pic;
+        }
+
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            LayoutInflater inflater = getActivity().getLayoutInflater();
-            View view = inflater.inflate(R.layout.users_list_fragment, parent, false);
-            TextView first_name = (TextView) view.findViewById(R.id.full_name);
-            User user = this.user_array.get(position);
-            ImageView image = (ImageView) view.findViewById(R.id.display_pic);
-            first_name.setText(user.first_name + " " +user.last_name);
-            if (!Global.empty(user.filename)) {
-                Picasso.with(getActivity())
-                        .cancelRequest(image);
-                Picasso.with(getActivity())
-                        .load(user.filename)
-                        .into(image);
+//            View view = convertView;
+//            final UserListViewHolder view_holder = new UserListViewHolder();
+//            if (view == null) {
+//                view = this.inflater.inflate(R.layout.users_list_fragment, parent, false);
+//                setViewHolder(view, view_holder);
+//            }
+//            UserListViewHolder holder = (UserListViewHolder) view.getTag();
+//            User user = this.user_array.get(position);
+//            Log.v(Integer.toString(user.user_id), "<<<<<<<USER_ID<<<<<<<<<");
+//            Log.v(Integer.toString(position), "<<<<<<<POSITION<<<<<<<<<");
+//
+//            if (position == 0){
+//                Log.v("HERRRRRRRRRRR", "<<<<<<<<<");
+//                view = this.inflater.inflate(R.layout.modal_header, parent, false);
+//                TextView textView = (TextView) view.findViewById(R.id.header);
+//                textView.setText("People in the conversation");
+//                view.setTag(view_holder);
+//                return view;
+//
+//            } else {
+//                holder.full_name.setText(user.first_name + " " + user.last_name);
+//                if (!Global.empty(user.filename)) {
+//                    Picasso.with(getActivity())
+//                            .cancelRequest(holder.display_pic);
+//                    Picasso.with(getActivity())
+//                            .load(user.filename)
+//                            .into(holder.display_pic);
+//                } else {
+//                    holder.display_pic.setImageResource(R.drawable.single_pic);
+//                }
+//            }
+//            return view;
+            if (position == 0){ //This is the HEADER
+                View view = this.inflater.inflate(R.layout.modal_header, parent, false);
+                TextView textView = (TextView) view.findViewById(R.id.header);
+                textView.setText("People in the conversation");
+                return view;
             } else {
-                image.setImageResource(R.drawable.single_pic);
+                LayoutInflater inflater = getActivity().getLayoutInflater();
+                View view = inflater.inflate(R.layout.users_list_fragment, parent, false);
+                TextView first_name = (TextView) view.findViewById(R.id.full_name);
+                User user = this.user_array.get(position);
+                ImageView image = (ImageView) view.findViewById(R.id.display_pic);
+                first_name.setText(user.first_name + " " + user.last_name);
+                if (!Global.empty(user.filename)) {
+                    Picasso.with(getActivity())
+                            .cancelRequest(image);
+                    Picasso.with(getActivity())
+                            .load(user.filename)
+                            .into(image);
+                } else {
+                    image.setImageResource(R.drawable.single_pic);
+                }
+                return view;
             }
-            return view;
+        }
+        private void setViewHolder(View view, UserListViewHolder view_holder){
+            view_holder.full_name = (TextView) view.findViewById(R.id.full_name);
+            view_holder.display_pic = (ImageView) view.findViewById(R.id.display_pic);
+            view.setTag(view_holder);
         }
 
     }
@@ -703,7 +751,6 @@ public class MainActivity extends ActionBarActivity {
                 HttpEntity response_entity = response.getEntity();
 
                 inputStream = response_entity.getContent();
-
                 // json is UTF-8 by default
                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
                 sb = new StringBuilder();
