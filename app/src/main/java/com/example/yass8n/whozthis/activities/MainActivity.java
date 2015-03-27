@@ -90,7 +90,7 @@ public class MainActivity extends ActionBarActivity {
         context = this;
         Firebase.setAndroidContext(this);
         firebase = new Firebase("https://radiant-inferno-906.firebaseio.com/");
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_holder);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, new PlaceholderFragment(), "MAIN")
@@ -322,7 +322,7 @@ public class MainActivity extends ActionBarActivity {
             Log.v(Integer.toString(v.getId()), " <<<<<<<<");
             if (v.getId() == R.id.create_message ) {
                 Toast.makeText(context, "Go to Contact Activity", Toast.LENGTH_SHORT).show();
-//                startActivity(new Intent(getActivity(), ContactActivity.class));
+                startActivity(new Intent(getActivity(), ContactActivity.class));
             }
         }
 
