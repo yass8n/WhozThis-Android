@@ -1,12 +1,145 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context="com.example.yass8n.whozthis.activities.ContactActivity$PlaceholderFragment">
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.gather_1.gather.ContactActivity"
+    android:id="@+id/contacts">
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:custom="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <!-- Contains the whole layout-->
 
-    <TextView android:text="@string/hello_world" android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        <!-- Search bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@drawable/search_border"
+            android:focusable="true"
+            android:id="@+id/search_bar"
+            android:focusableInTouchMode="true"
+            android:weightSum="100"
+            android:orientation="horizontal">
+            <RelativeLayout
+                android:layout_width="35dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                >
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="7.5dp"
+                    android:src="@android:drawable/ic_menu_search"
+                    android:layout_alignParentRight="true"
+                    />
+            </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="85"
+                >
 
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:id="@+id/search_field"
+                    android:layout_marginRight="5dp"
+                    android:layout_marginLeft="5dp"
+                    android:textSize="15dp"
+                    android:background="@android:color/transparent"
+                    android:hint="Search"
+                    >
+                </EditText>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="15"
+                android:id="@+id/invite_bubble_container"
+                android:layout_gravity="left"
+                android:visibility="invisible"
+                android:orientation="horizontal">
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_marginRight="6dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_height="match_parent">
+                    <com.makeramen.RoundedImageView
+                        xmlns:app="http://schemas.android.com/apk/res-auto"
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:src="@drawable/single_pic"
+                        android:scaleType="fitCenter"
+                        android:layout_gravity="center"
+                        android:id="@+id/invite_picture"
+                        android:layout_centerVertical="true"
+                        android:layout_centerInParent="true"
+                        android:layout_marginRight="3dp"
+                        app:riv_oval="true" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/invite_letter"
+                        android:textSize="28dp"
+                        android:layout_centerInParent="true"
+                        android:textColor="@color/white"/>
+                </RelativeLayout>
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_marginRight="3dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_height="match_parent">
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentBottom="true"
+                        >
+                        <com.makeramen.RoundedImageView
+                            xmlns:app="http://schemas.android.com/apk/res-auto"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_centerVertical="true"
+                            android:layout_centerHorizontal="true"
+                            android:gravity="center"
+                            android:layout_centerInParent="true"
+                            android:src="@color/blue"
+                            android:scaleType="fitCenter"
+                            app:riv_oval="true" />
+                        <TextView
+                            android:layout_centerVertical="true"
+                            android:layout_centerHorizontal="true"
+                            android:id="@+id/invite_number"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="17dp"
+                            android:gravity="center"
+                            android:layout_centerInParent="true"
+                            android:textColor="@color/white"/>
+                        />
+                    </RelativeLayout>
+                </RelativeLayout>
+            </RelativeLayout>
+
+        </LinearLayout>
+        <!--Search bar ends-->
+        <com.example.yass8n.whozthis.objects.PinnedSectionListView
+            android:id="@+id/list_contact_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="@color/white"
+            android:weightSum="100"
+            android:clipChildren="false"
+            android:divider="@null"
+            android:dividerHeight="0dp"
+            />
+
+        <!-- Contains the whole layout end-->
+    </LinearLayout>
 </RelativeLayout>
