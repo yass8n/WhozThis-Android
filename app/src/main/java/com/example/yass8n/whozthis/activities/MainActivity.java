@@ -1,15 +1,18 @@
 package com.example.yass8n.whozthis.activities;
 
 import android.app.AlertDialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.provider.ContactsContract;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
@@ -79,7 +82,10 @@ public class MainActivity extends ActionBarActivity {
     public static Firebase firebase;
     public static Context context;
     public static ArrayList<Conversation> conversations_array = new ArrayList<Conversation>();
+    public static ArrayList<User> friends_array = new ArrayList<>();
     public static int HEADER_ID = -1;
+    public static ArrayList<String> phones = new ArrayList<String>();
+    public static ArrayList<User> contacts_in_phone = new ArrayList<>();
     //need the conversations array attached to the main activity so we can access it from other activities with "MainActivity.conversations_array"
 
 
@@ -118,9 +124,11 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
+
     @Override
     public void onStart(){
         if (checkUserLogin()){
+            loadContacts();
             refreshConversations();
         }
         super.onStart();
@@ -149,7 +157,189 @@ public class MainActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
+    public void loadContacts(){
+//            if (loaded_info == false) {
+        getContactsTask runner = new getContactsTask();
+        runner.execute();
+//            }
+    }
+    private class getContactsTask extends AsyncTask<Void, String, String> {
+        private int status_code;
+        private String resp;
 
+        @Override
+        protected String doInBackground(Void... v)  {
+            try {
+                // Run query
+                ContentResolver cr = context.getContentResolver();
+                Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, ContactsContract.Contacts.DISPLAY_NAME + " ASC");
+                if (cur.getCount() > 0) {
+                    while (cur.moveToNext()) {
+                        String id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
+                        String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+                        User contact = new User();
+                        if (Integer.parseInt(cur.getString(
+                                cur.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
+
+                            Cursor pCur = cr.query(
+                                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                                    null,
+                                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                                    new String[]{id}, null);
+//                            while (pCur.moveToNext()) {
+                            pCur.moveToNext();
+
+
+                            String phoneNo = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                            contact.phone = User.stripPhone(phoneNo);
+                            phones.add(contact.phone);
+                            contact.first_name = name;
+                            contact.first_letter = Character.toString(contact.first_name.charAt(0)).toUpperCase();
+                            contact.filename = "";
+                            contacts_in_phone.add(contact);
+                            Log.v(contact.phone,  " phone");
+//                        }
+//                            pCur.close();
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                resp = e.getMessage();
+            }
+            return resp;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+                UpdateFriendsTask task = new UpdateFriendsTask();
+                task.execute(phones);
+        }
+        public class UpdateFriendsTask extends AsyncTask<ArrayList<String>, Void, JSONObject> {
+
+            @Override
+            protected void onPreExecute() {
+            }
+
+            @Override
+            protected JSONObject doInBackground(ArrayList<String>... phones) {
+
+                JSONObject jObject = null;
+                InputStream inputStream = null;
+                String result = null;
+                try {
+
+                    HttpClient httpClient = new DefaultHttpClient();
+                    HttpContext localContext = new BasicHttpContext();
+//                    HttpPost httpPost = new HttpPost("http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/v1/users/sign_up");
+                    HttpPost httpPost = new HttpPost(Global.AWS_URL + "v1/users/friends");
+//                    HttpPost httpPost = new HttpPost("http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/v1/users/friends");
+
+                    httpPost.setHeader("Accept", "application/json");
+                    httpPost.setHeader("Content-type", "application/json");
+
+                    MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+
+//                    httpPost.setEntity(new StringEntity("{\"user\":{\"password\":\"aa\",\"phone\":\"aa\",\"first_name\":\"aa\",\"last_name\":\"aa\"}}"));
+//                    httpPost.setEntity(new StringEntity("{\"conversation\":{\"title\":\"hey\",\"user_id\":1},\"phones\":[\"aa\",\"2097402793\"]}"));
+//                                                    :["aa","2097402793"]}"
+//                    httpPost.setEntity(new StringEntity("{\"phones\":[\"a\"]}"));
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("{");sb.append('"');sb.append("phones");sb.append('"');sb.append(":");sb.append("[");
+                    for (int i = 0; i < contacts_in_phone.size(); i++) {
+                        sb.append('"');sb.append(contacts_in_phone.get(i).phone);sb.append('"');
+                        if (i != contacts_in_phone.size()-1 )
+                            sb.append(",");
+                    }
+                    sb.append("]");sb.append('}');
+                    String params = sb.toString();
+                    Global.log(params, " <<<<<<<<");
+                    httpPost.setEntity(new StringEntity(params));
+
+                    HttpResponse response = httpClient.execute(httpPost, localContext);
+                    status_code = response.getStatusLine().getStatusCode();
+                    HttpEntity response_entity = response.getEntity();
+
+                    inputStream = response_entity.getContent();
+                    // json is UTF-8 by default
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+                    sb = new StringBuilder();
+
+                    String line = null;
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line + "\n");
+                    }
+
+                    result = sb.toString();
+
+                    // write response to log
+                    jObject = new JSONObject(result);
+
+
+                } catch (ClientProtocolException e) {
+                    // Log exception
+                    Log.v("CLIENT", "ERROR");
+
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    // Log exception
+                    Log.v("IOE", "ERROR");
+
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    Log.v(e.toString(), "ERROR");
+
+                    e.printStackTrace();
+                }
+                return jObject;
+            }
+
+            @Override
+            protected void onPostExecute(JSONObject result) {
+                if (status_code == 200) {
+                    try {
+                        JSONArray friends = new JSONArray(result.getString("friends"));
+                        conversations_array.clear();
+                        for (int i = 0; i < friends.length(); i ++){
+                            JSONObject json_user = friends.getJSONObject(i);
+                            friends_array.add(createFriend(json_user));
+                        }
+                    } catch (JSONException e) {
+                        Log.e(e.toString(), "JSONError");
+                    }
+                    Toast.makeText(context, result.toString(), Toast.LENGTH_LONG).show();
+                }
+                else {
+                    Toast.makeText(context, "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
+                }
+                super.onPostExecute(result);
+            }
+        }
+        private User createFriend(JSONObject json_user){
+            User temp_user  = new User();
+            try {
+                temp_user.first_name = json_user.getString("first_name");
+                temp_user.last_name = json_user.getString("last_name");
+                temp_user.filename = json_user.getString("filename");
+                temp_user.user_id = json_user.getInt("id");
+            } catch (JSONException e) {
+                Log.v(e.toString(), "JSON ERROR");
+            }
+            return temp_user;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            // Things to be done before execution of long running operation. For
+            // example showing ProgessDialog
+//                getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+//                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+//                ImageView container = (ImageView) findViewById(R.id.start_up);
+//                container.setVisibility(View.VISIBLE);
+        }
+
+    }
     public boolean checkUserLogin(){
         boolean result = true;
         SharedPreferences user = getSharedPreferences("user", Context.MODE_PRIVATE);
@@ -247,7 +437,6 @@ public class MainActivity extends ActionBarActivity {
 //                    Toast.makeText(context, Integer.toString(conversations_array.size()), Toast.LENGTH_LONG).show();
                 super.onPostExecute(result);
             } catch (JSONException e) {
-                Log.e("Problem accessing API signup", "JSONError");
                 Log.e(e.toString(), "JSONError");
             }
             PlaceholderFragment.conversatons_adapter.notifyDataSetChanged();
@@ -556,7 +745,6 @@ public class MainActivity extends ActionBarActivity {
 
                 @Override
                 protected void onPostExecute(JSONObject result) {
-                    Log.v(result.toString(), " <<<<<<<<<<<");
                     if (status_code == 200) {
                         animateAndDelete(this.conversation, this.conversation_view, this.pic_view);
                         super.onPostExecute(result);
@@ -568,90 +756,90 @@ public class MainActivity extends ActionBarActivity {
             }
         }
 
-    public class ShowUsersModal extends AsyncTask<Conversation, String, ArrayList<User>> {
-        private float user_height;
-        private  AlertDialog.Builder builderSingle;
-        private AlertDialog alertDialog;
-        private UsersAdapter adapter;
+        public class ShowUsersModal extends AsyncTask<Conversation, String, ArrayList<User>> {
+            private float user_height;
+            private  AlertDialog.Builder builderSingle;
+            private AlertDialog alertDialog;
+            private UsersAdapter adapter;
 
-        @Override
-        protected void onPreExecute() {
-            builderSingle = new AlertDialog.Builder(getActivity(), R.style.DialogSlideAnim);
-            user_height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40, getResources().getDisplayMetrics());
-        }
-
-        @Override
-        protected ArrayList<User> doInBackground(Conversation... c) {
-            ArrayList<User> users_in_convo = new ArrayList<>();
-            User header = new User();
-            header.user_id = HEADER_ID;
-            header.first_name = "People in the conversation";
-            users_in_convo.add(header);
-            for (int i = 0; i < c[0].users.size(); i++) {
-                users_in_convo.add(c[0].users.get(i));
+            @Override
+            protected void onPreExecute() {
+                builderSingle = new AlertDialog.Builder(getActivity(), R.style.DialogSlideAnim);
+                user_height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40, getResources().getDisplayMetrics());
             }
-            users_in_convo.remove(WelcomeActivity.current_user);//dont show the current user in the modal
-            return users_in_convo;
-        }
 
-        @Override
-        protected void onPostExecute(ArrayList<User> users_in_convo) {
-            if( alertDialog != null && alertDialog.isShowing() ) return;
-            adapter = new UsersAdapter(users_in_convo);
-            builderSingle.setAdapter(adapter, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
+            @Override
+            protected ArrayList<User> doInBackground(Conversation... c) {
+                ArrayList<User> users_in_convo = new ArrayList<>();
+                User header = new User();
+                header.user_id = HEADER_ID;
+                header.first_name = "People in the conversation";
+                users_in_convo.add(header);
+                for (int i = 0; i < c[0].users.size(); i++) {
+                    users_in_convo.add(c[0].users.get(i));
                 }
-            });
-            Display display = getActivity().getWindowManager().getDefaultDisplay();
-            Point size = new Point();
-            display.getSize(size);
-            double window_width = (double) size.x;
-            window_width = window_width /1.5;
-            alertDialog = builderSingle.create();
-            alertDialog.show();
-            WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-            lp.copyFrom(alertDialog.getWindow().getAttributes());
-            lp.height = (int) (users_in_convo.size() >= 4 ? user_height * 5 : (user_height * (users_in_convo.size() + 1)));//111 is height of one list item..80 is height of header
-            lp.width = (int) window_width;
-            lp.dimAmount = 0.5f;
-            lp.x = 0;
-            alertDialog.getWindow().setAttributes(lp);
-        }
-    }
+                users_in_convo.remove(WelcomeActivity.current_user);//dont show the current user in the modal
+                return users_in_convo;
+            }
 
-    public class UsersAdapter extends BaseAdapter{
-        private LayoutInflater inflater;
-        ArrayList<User> user_array = new ArrayList<>();
-
-        UsersAdapter(ArrayList<User> user_array) {
-            this.inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            this.user_array = (ArrayList<User>) user_array.clone();
-        }
-
-        @Override
-        public int getCount() {
-            return this.user_array.size();
+            @Override
+            protected void onPostExecute(ArrayList<User> users_in_convo) {
+                if( alertDialog != null && alertDialog.isShowing() ) return;
+                adapter = new UsersAdapter(users_in_convo);
+                builderSingle.setAdapter(adapter, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                });
+                Display display = getActivity().getWindowManager().getDefaultDisplay();
+                Point size = new Point();
+                display.getSize(size);
+                double window_width = (double) size.x;
+                window_width = window_width /1.5;
+                alertDialog = builderSingle.create();
+                alertDialog.show();
+                WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+                lp.copyFrom(alertDialog.getWindow().getAttributes());
+                lp.height = (int) (users_in_convo.size() >= 4 ? user_height * 5 : (user_height * (users_in_convo.size() + 1)));//111 is height of one list item..80 is height of header
+                lp.width = (int) window_width;
+                lp.dimAmount = 0.5f;
+                lp.x = 0;
+                alertDialog.getWindow().setAttributes(lp);
+            }
         }
 
-        @Override
-        public Object getItem(int position) {
-            return this.user_array.get(position);
+        public class UsersAdapter extends BaseAdapter{
+            private LayoutInflater inflater;
+            ArrayList<User> user_array = new ArrayList<>();
 
-        }
+            UsersAdapter(ArrayList<User> user_array) {
+                this.inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                this.user_array = (ArrayList<User>) user_array.clone();
+            }
 
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
+            @Override
+            public int getCount() {
+                return this.user_array.size();
+            }
 
-        class UserListViewHolder {
-            TextView full_name;
-            ImageView display_pic;
-        }
+            @Override
+            public Object getItem(int position) {
+                return this.user_array.get(position);
 
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+            }
+
+            @Override
+            public long getItemId(int position) {
+                return position;
+            }
+
+            class UserListViewHolder {
+                TextView full_name;
+                ImageView display_pic;
+            }
+
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
 //            View view = convertView;
 //            final UserListViewHolder view_holder = new UserListViewHolder();
 //            if (view == null) {
@@ -684,187 +872,37 @@ public class MainActivity extends ActionBarActivity {
 //                }
 //            }
 //            return view;
-            if (position == 0){ //This is the HEADER
-                View view = this.inflater.inflate(R.layout.modal_header, parent, false);
-                TextView textView = (TextView) view.findViewById(R.id.header);
-                textView.setText("People in the conversation");
-                return view;
-            } else {
-                LayoutInflater inflater = getActivity().getLayoutInflater();
-                View view = inflater.inflate(R.layout.users_list_fragment, parent, false);
-                TextView first_name = (TextView) view.findViewById(R.id.full_name);
-                User user = this.user_array.get(position);
-                ImageView image = (ImageView) view.findViewById(R.id.display_pic);
-                first_name.setText(user.first_name + " " + user.last_name);
-                if (!Global.empty(user.filename)) {
-                    Picasso.with(getActivity())
-                            .cancelRequest(image);
-                    Picasso.with(getActivity())
-                            .load(user.filename)
-                            .into(image);
+                if (position == 0){ //This is the HEADER
+                    View view = this.inflater.inflate(R.layout.modal_header, parent, false);
+                    TextView textView = (TextView) view.findViewById(R.id.header);
+                    textView.setText("People in the conversation");
+                    return view;
                 } else {
-                    image.setImageResource(R.drawable.single_pic);
+                    LayoutInflater inflater = getActivity().getLayoutInflater();
+                    View view = inflater.inflate(R.layout.users_list_fragment, parent, false);
+                    TextView first_name = (TextView) view.findViewById(R.id.full_name);
+                    User user = this.user_array.get(position);
+                    ImageView image = (ImageView) view.findViewById(R.id.display_pic);
+                    first_name.setText(user.first_name + " " + user.last_name);
+                    if (!Global.empty(user.filename)) {
+                        Picasso.with(getActivity())
+                                .cancelRequest(image);
+                        Picasso.with(getActivity())
+                                .load(user.filename)
+                                .into(image);
+                    } else {
+                        image.setImageResource(R.drawable.single_pic);
+                    }
+                    return view;
                 }
-                return view;
             }
-        }
-        private void setViewHolder(View view, UserListViewHolder view_holder){
-            view_holder.full_name = (TextView) view.findViewById(R.id.full_name);
-            view_holder.display_pic = (ImageView) view.findViewById(R.id.display_pic);
-            view.setTag(view_holder);
+            private void setViewHolder(View view, UserListViewHolder view_holder){
+                view_holder.full_name = (TextView) view.findViewById(R.id.full_name);
+                view_holder.display_pic = (ImageView) view.findViewById(R.id.display_pic);
+                view.setTag(view_holder);
+            }
+
         }
 
     }
-
-    public class PostAPI extends AsyncTask<String, Void, JSONObject> {
-
-        @Override
-        protected void onPreExecute() {
-        }
-
-        @Override
-        protected JSONObject doInBackground(String... s) {
-
-            JSONObject jObject = null;
-            InputStream inputStream = null;
-            String result = null;
-            try {
-
-                HttpClient httpClient = new DefaultHttpClient();
-                HttpContext localContext = new BasicHttpContext();
-//                    HttpPost httpPost = new HttpPost("http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/v1/users/sign_up");
-                HttpPost httpPost = new HttpPost("http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/v1/users/friends");
-//                    HttpPost httpPost = new HttpPost("http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/v1/users/friends");
-
-                httpPost.setHeader("Accept", "application/json");
-                httpPost.setHeader("Content-type", "application/json");
-
-                MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-
-                StringBuilder sb = new StringBuilder();
-//                    httpPost.setEntity(new StringEntity("{\"user\":{\"password\":\"aa\",\"phone\":\"aa\",\"first_name\":\"aa\",\"last_name\":\"aa\"}}"));
-//                    httpPost.setEntity(new StringEntity("{\"conversation\":{\"title\":\"hey\",\"user_id\":1},\"phones\":[\"aa\",\"2097402793\"]}"));
-                httpPost.setEntity(new StringEntity("{\"phones\":[\"a\"]}"));
-
-
-                HttpResponse response = httpClient.execute(httpPost, localContext);
-                HttpEntity response_entity = response.getEntity();
-
-                inputStream = response_entity.getContent();
-                // json is UTF-8 by default
-                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
-                sb = new StringBuilder();
-
-                String line = null;
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line + "\n");
-                }
-
-                result = sb.toString();
-
-                // write response to log
-                jObject = new JSONObject(result);
-
-
-            } catch (ClientProtocolException e) {
-                // Log exception
-                Log.v("CLIENT", "ERROR");
-
-                e.printStackTrace();
-            } catch (IOException e) {
-                // Log exception
-                Log.v("IOE", "ERROR");
-
-                e.printStackTrace();
-            } catch (JSONException e) {
-                Log.v(e.toString(), "ERROR");
-
-                e.printStackTrace();
-            }
-            return jObject;
-        }
-
-        @Override
-        protected void onPostExecute(JSONObject result) {
-            Toast.makeText(getActivity(), result.toString(), Toast.LENGTH_LONG).show();
-            super.onPostExecute(result);
-        }
-    }
-
 }
-}
-
-
-
-
-
-//    private class getContactsTask extends AsyncTask<Void, String, String> {
-//
-//        private String resp;
-//
-//        @Override
-//        protected String doInBackground(Void... v)  {
-//            try {
-//                // Run query
-//                ContentResolver cr = MainActivity.this.getContentResolver();
-//                Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, ContactsContract.Contacts.DISPLAY_NAME + " ASC");
-//                int count = 0;
-//                if (cur.getCount() > 0) {
-//                    while (cur.moveToNext()) {
-//                        String id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
-//                        String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-//                        Contact contact = new Contact();
-//                        if (Integer.parseInt(cur.getString(
-//                                cur.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
-//
-//                            Cursor pCur = cr.query(
-//                                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-//                                    null,
-//                                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-//                                    new String[]{id}, null);
-////                            while (pCur.moveToNext()) {
-//                            pCur.moveToNext();
-//
-//
-//                            String phoneNo = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-//                            contact.setPhone(phoneNo);
-//                            phones.add(contact.getPhone());
-//                            contact.name = name;
-//                            contact.first_letter = Character.toString(contact.name.charAt(0)).toUpperCase();
-//                            contact.image = 0;
-//                            contact.index = count;
-//                            contacts_in_phone.add(contact);
-//                            count++;
-//
-////                        }
-////                            pCur.close();
-//                        }
-//                    }
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//                resp = e.getMessage();
-//            }
-//            return resp;
-//        }
-//
-//        @Override
-//        protected void onPostExecute(String result) {
-//            UpdateContactsTask task = new UpdateContactsTask();
-//            task.execute(phones);
-//        }
-//
-//        @Override
-//        protected void onPreExecute() {
-//            // Things to be done before execution of long running operation. For
-//            // example showing ProgessDialog
-//            getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-//                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-//            ImageView container = (ImageView) findViewById(R.id.start_up);
-//            container.setVisibility(View.VISIBLE);
-//        }
-//
-//        @Override
-//        protected void onProgressUpdate(String... text) {
-//        }
-//    }
