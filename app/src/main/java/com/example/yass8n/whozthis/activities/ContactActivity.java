@@ -72,7 +72,7 @@ public class ContactActivity extends ActionBarActivity {
     public static final int POSITION_OF_FIRST_LIST = 2;
     public static View last_touched_view;
 
-    private static ListsUsersAdapter adapter;
+    private static UsersAdapter adapter;
     private int invite_id;
     private PinnedSectionListView list_contact_view;
     private static final int NUM_HEADERS = 2;
@@ -116,7 +116,7 @@ public class ContactActivity extends ActionBarActivity {
     public void initializeVariables() {
         invited_people = new ArrayList<User>();
         list_contact_view = (PinnedSectionListView) findViewById(R.id.list_contact_scroll);
-        adapter = new ListsUsersAdapter();
+        adapter = new UsersAdapter();
         list_contact_view.setAdapter(adapter);
         search_field = (EditText) findViewById(R.id.search_field);
         search_field.addTextChangedListener(new TextWatcher() {
@@ -170,22 +170,12 @@ public class ContactActivity extends ActionBarActivity {
             invite_container.setVisibility(View.INVISIBLE);
         }
     }
-    public void onClicked(User item){
-        search_field.setText("");
-        if (item.index == CREATE_NEW) {
-//            createNewList();
-        } else if (item.index == LIST){
-//            new AddListToEventTask(item.index).execute();
-        } else {
-            setInvited(item.index);
-        }
-    }
 
-    public class ListsUsersAdapter extends BaseAdapter implements PinnedSectionListView.PinnedSectionListAdapter, Filterable {
+    public class UsersAdapter extends BaseAdapter implements PinnedSectionListView.PinnedSectionListAdapter, Filterable {
         private LayoutInflater inflater = getLayoutInflater();
         ArrayList<User> mOriginalValues;
 
-        ListsUsersAdapter() {
+        UsersAdapter() {
 
             int index = 0;
             this.inflater = (LayoutInflater) ContactActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -195,25 +185,20 @@ public class ContactActivity extends ActionBarActivity {
             header.index = 0;
             index++;
             objectsArrayForAdapter.add(header);
-//            for (int i = 0; i < MainActivity.friends_array.size(); i++) {
-//                User friend = MainActivity.friends_array.get(i);
-//                friend.checked = false;
-//                friend.checked_list_number = 0;
-//                friend.index = index;
-//                friend.flag = CONTACT_OR_USER;
-//                index++;
-//                objectsArrayForAdapter.add(friend);
-//            }
-//            for (int i = 0; i < MainActivity.contacts_in_phone.size(); i++) {
-//                Contact contact = MainActivity.contacts_in_phone.get(i);
-//                contact.image = Global.colorArray[i % Global.colorArray.length];
-//                contact.checked = false;
-//                contact.checked_list_number = 0;
-//                contact.index = index;
-//                contact.flag = CONTACT_OR_USER;
-//                index++;
-//                objectsArrayForAdapter.add(contact);
-//            }
+            for (int i = 0; i < MainActivity.friends_array.size(); i++) {
+                User friend = MainActivity.friends_array.get(i);
+                friend.index = index;
+                index++;
+                objectsArrayForAdapter.add(friend);
+            }
+            for (int i = 0; i < MainActivity.contacts_in_phone.size(); i++) {
+                User contact = MainActivity.contacts_in_phone.get(i);
+                contact.color = Global.colorArray[i % Global.colorArray.length];
+                contact.last_name = "";
+                contact.index = index;
+                index++;
+                objectsArrayForAdapter.add(contact);
+            }
             objectsArrayOriginal = new ArrayList<User>(objectsArrayForAdapter);
         }
         class UserViewHolder {
@@ -247,57 +232,52 @@ public class ContactActivity extends ActionBarActivity {
                 setViewHolder(view, view_holder);
             }
             final UserViewHolder holder = (UserViewHolder) view.getTag();
-            final User temp = objectsArrayForAdapter.get(position);
+            final User item = objectsArrayForAdapter.get(position);
 
-            if (temp.index == HEADER){
+            if (item.index == 0){
                 view = this.inflater.inflate(R.layout.contact_list_header, parent, false);
                 TextView title = (TextView) view.findViewById(R.id.header);
-                title.setText(temp.first_name + " " + temp.last_name);
+                title.setText(item.first_name);
                 view.setTag(view_holder);
                 return view;
             }
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    View[] view = new View[1];
-                    view[0] = v;
-                    User[] User = new User[1];
-                    User[0] = temp;
-//                    new ClickedTask(view, User).execute();
-                }
-            });
-            view.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    v.setId(temp.index);
-                    last_touched_view = v;
-                    return false;
+                    item.checked = !(item.checked);
+                    if (item.checked) {
+                        invited_people.add(item);
+                    } else {
+                        invited_people.remove(item);
+                    }
+                    search_field.setText("");
+                    adapter.notifyDataSetChanged();
                 }
             });
 
-            if (temp.checked == true && temp.index != CREATE_NEW) {
+            if (item.checked && item.index != 0) {
                 holder.checkmark.setImageResource(R.mipmap.attending);
             } else {
                 holder.checkmark.setImageResource(android.R.color.transparent);
             }
-            holder.title.setText(temp.first_name + " " + temp.last_name);
-            holder.first_letter.setText(temp.first_letter);
-            if (!Global.empty(temp.filename)) {
+            holder.title.setText(item.first_name + " " + item.last_name);
+            holder.first_letter.setText(item.first_letter);
+            if (!Global.empty(item.filename)) {
                 Picasso.with(ContactActivity.this)
                         .cancelRequest(holder.image);
 
                 Picasso.with(ContactActivity.this)
-                        .load(temp.filename)
+                        .load(item.filename)
                         .into(holder.image);
-            } else if (temp.last_name.equals("")){
-                //this is a contact or a list
-//                holder.image.setImageResource(temp.image);
+            }
+            else if (Global.empty(item.last_name)){
+//                this is a contact
+                holder.image.setImageResource(item.color);
             }
             else {
-                //this is a user
+                //this is a friend without a picture uploaded
                 holder.image.setImageResource(R.drawable.single_pic);
             }
-
             return view;
         }
         private void setViewHolder(View view, UserViewHolder view_holder){
@@ -353,7 +333,6 @@ public class ContactActivity extends ActionBarActivity {
                      *
                      ********/
                     if (constraint == null || constraint.length() == 0) {
-
                         // set the Original result to return
                         results.count = mOriginalValues.size();
                         results.values = mOriginalValues;
@@ -361,11 +340,10 @@ public class ContactActivity extends ActionBarActivity {
                         constraint = constraint.toString().toLowerCase();
                         for (int i = 0; i < mOriginalValues.size(); i++) {
                             User item = mOriginalValues.get(i);
-//                            if (item.index != CREATE_NEW && (item.index == HEADER
-//                                    || item.name.toLowerCase().startsWith(constraint.toString().toLowerCase()) ||
-//                                    item.last_name.toLowerCase().startsWith(constraint.toString().toLowerCase()))) {
-//                                FilteredArrList.add(item);
-//                            }
+                            if (item.index == 0 || (item.first_name.toLowerCase().startsWith(constraint.toString().toLowerCase()) ||
+                                    item.last_name.toLowerCase().startsWith(constraint.toString().toLowerCase()))) {
+                                FilteredArrList.add(item);
+                            }
                         }
                         // set the Filtered result to return
                         results.count = FilteredArrList.size();

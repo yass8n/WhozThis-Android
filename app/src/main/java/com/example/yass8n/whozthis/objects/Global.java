@@ -16,6 +16,8 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.yass8n.whozthis.R;
+
 import org.json.JSONObject;
 
 import java.io.InputStream;
@@ -25,9 +27,18 @@ public class Global extends Application {
     public static final String LOCAL_URL = "http://10.0.2.2:3000/api/";
     public static final String FBASE_URL = "https://radiant-inferno-906.firebaseio.com/";
 
+    public static int[] colorArray = {  R.color.orangee, R.color.reddish, R.color.dark_orange, R.color.red,
+            R.color.greenish_blue, R.color.green, R.color.dark_green,
+            R.color.blue, R.color.light_purple,R.color.purplee,R.color.invite_dark_blue,
+            R.color.light_gray, R.color.grayish};
+
+    public static String[] hex_array = {"#f39c12","#e67e22","#d35400","#c0392b",
+            "#1abc9c","#27ae60","#16a085",
+            "#3498db","#9b59b6","#8e44ad", "#34495e",
+            "#A2A2A2", "#7f8c8d"};
 
     public static Boolean empty(String string) {
-        if (string == null || string.equals("") || string.equals("null"))
+        if (string == null || string.equals("") || string.contains("null"))
             return true;
         else
             return false;

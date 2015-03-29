@@ -17,6 +17,7 @@ public class User {
     public String filename;
     public int user_id;
     public int index;
+    public int color;
     public boolean checked;
 
     public void User(){
@@ -28,6 +29,7 @@ public class User {
         this.user_id = 0;
         this.index = 0;
         this.checked = false;
+        this.color = 0;
     }
     public void User(String phone, String first_name, String last_name, String filename, int user_id){
         this.phone = stripPhone(phone);

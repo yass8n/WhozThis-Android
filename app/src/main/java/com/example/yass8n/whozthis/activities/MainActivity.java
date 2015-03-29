@@ -197,7 +197,6 @@ public class MainActivity extends ActionBarActivity {
                             contact.first_letter = Character.toString(contact.first_name.charAt(0)).toUpperCase();
                             contact.filename = "";
                             contacts_in_phone.add(contact);
-                            Log.v(contact.phone,  " phone");
 //                        }
 //                            pCur.close();
                         }
@@ -300,15 +299,14 @@ public class MainActivity extends ActionBarActivity {
                 if (status_code == 200) {
                     try {
                         JSONArray friends = new JSONArray(result.getString("friends"));
-                        conversations_array.clear();
+                        friends_array.clear();
                         for (int i = 0; i < friends.length(); i ++){
                             JSONObject json_user = friends.getJSONObject(i);
-                            friends_array.add(createFriend(json_user));
+                            friends_array.add(createFriend(json_user.getJSONObject("user")));
                         }
                     } catch (JSONException e) {
                         Log.e(e.toString(), "JSONError");
                     }
-                    Toast.makeText(context, result.toString(), Toast.LENGTH_LONG).show();
                 }
                 else {
                     Toast.makeText(context, "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
@@ -321,7 +319,7 @@ public class MainActivity extends ActionBarActivity {
             try {
                 temp_user.first_name = json_user.getString("first_name");
                 temp_user.last_name = json_user.getString("last_name");
-                temp_user.filename = json_user.getString("filename");
+                temp_user.filename = "http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/images/" + json_user.getString("filename");
                 temp_user.user_id = json_user.getInt("id");
             } catch (JSONException e) {
                 Log.v(e.toString(), "JSON ERROR");
@@ -428,13 +426,11 @@ public class MainActivity extends ActionBarActivity {
         protected void onPostExecute(JSONObject result) {
             try {
                 JSONArray conversations = new JSONArray(result.getString("conversations"));
-//                    Toast.makeText(getActivity(), conversations.toString(), Toast.LENGTH_LONG).show();
                 conversations_array.clear();
                 for (int i = 0; i < conversations.length(); i ++){
                     JSONObject json_conversation = conversations.getJSONObject(i);
                     conversations_array.add(createConversation(json_conversation));
                 }
-//                    Toast.makeText(context, Integer.toString(conversations_array.size()), Toast.LENGTH_LONG).show();
                 super.onPostExecute(result);
             } catch (JSONException e) {
                 Log.e(e.toString(), "JSONError");
@@ -508,7 +504,6 @@ public class MainActivity extends ActionBarActivity {
 //                firebase.child("first_maessage").setValue("Setting message.");
 //                GetStreamAPI task = new GetStreamAPI();
 //                task.execute();
-            Log.v(Integer.toString(v.getId()), " <<<<<<<<");
             if (v.getId() == R.id.create_message ) {
                 Toast.makeText(context, "Go to Contact Activity", Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(getActivity(), ContactActivity.class));
