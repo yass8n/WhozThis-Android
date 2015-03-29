@@ -213,8 +213,8 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         protected void onPostExecute(String result) {
-                UpdateFriendsTask task = new UpdateFriendsTask();
-                task.execute(phones);
+            UpdateFriendsTask task = new UpdateFriendsTask();
+            task.execute(phones);
         }
         public class UpdateFriendsTask extends AsyncTask<ArrayList<String>, Void, JSONObject> {
 
@@ -350,9 +350,21 @@ public class MainActivity extends ActionBarActivity {
         GetStreamAPI get_stream = new GetStreamAPI();
         get_stream.execute();
     }
+    public static Conversation createConversation(JSONObject json_conversation){
+        Conversation temp_conversation = new Conversation();
+        try {
+            temp_conversation.title = json_conversation.getString("title");
+            temp_conversation.id = json_conversation.getInt("id");
+            temp_conversation.setDate(json_conversation.getString("created_at"));
+            temp_conversation.users = GetStreamAPI.createUserList(new JSONArray(json_conversation.getString("users")));
+        } catch (JSONException e) {
+            Log.v(e.toString(), "JSON ERROR");
+        }
+        return temp_conversation;
+    }
 
     public static class GetStreamAPI extends AsyncTask<String, Void, JSONObject> {
-
+        private int status_code;
         @Override
         protected void onPreExecute() {
         }
@@ -370,6 +382,7 @@ public class MainActivity extends ActionBarActivity {
                 HttpGet httpGet = new HttpGet(Global.AWS_URL + "v1/users/stream/" + Integer.toString(WelcomeActivity.current_user.user_id));
 
                 HttpResponse response = httpClient.execute(httpGet, localContext);
+                status_code = status_code = response.getStatusLine().getStatusCode();
                 HttpEntity response_entity = response.getEntity();
 
                 inputStream = response_entity.getContent();
@@ -408,32 +421,24 @@ public class MainActivity extends ActionBarActivity {
         }
         @Override
         protected void onPostExecute(JSONObject result) {
-            try {
-                JSONArray conversations = new JSONArray(result.getString("conversations"));
-                conversations_array.clear();
-                for (int i = 0; i < conversations.length(); i ++){
-                    JSONObject json_conversation = conversations.getJSONObject(i);
-                    conversations_array.add(createConversation(json_conversation));
+            if (status_code == 200) {
+                try {
+                    JSONArray conversations = new JSONArray(result.getString("conversations"));
+                    conversations_array.clear();
+                    for (int i = 0; i < conversations.length(); i++) {
+                        JSONObject json_conversation = conversations.getJSONObject(i);
+                        conversations_array.add(MainActivity.createConversation(json_conversation));
+                        PlaceholderFragment.conversatons_adapter.notifyDataSetChanged();
+                    }
+                } catch (JSONException e) {
+                    Log.e(e.toString(), "JSONError");
                 }
-                super.onPostExecute(result);
-            } catch (JSONException e) {
-                Log.e(e.toString(), "JSONError");
+            } else{
+                Toast.makeText(context, "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
             }
-            PlaceholderFragment.conversatons_adapter.notifyDataSetChanged();
+            super.onPostExecute(result);
         }
-        private Conversation createConversation(JSONObject json_conversation){
-            Conversation temp_conversation = new Conversation();
-            try {
-                temp_conversation.title = json_conversation.getString("title");
-                temp_conversation.id = json_conversation.getInt("id");
-                temp_conversation.setDate(json_conversation.getString("created_at"));
-                temp_conversation.users = createUserList(new JSONArray(json_conversation.getString("users")));
-            } catch (JSONException e) {
-                Log.v(e.toString(), "JSON ERROR");
-            }
-            return temp_conversation;
-        }
-        private ArrayList<User> createUserList(JSONArray users) {
+        public static ArrayList<User> createUserList(JSONArray users) {
             ArrayList<User> user_list = new ArrayList<User>();
             try {
                 for (int i = 0; i < users.length(); i++) {
@@ -594,7 +599,6 @@ public class MainActivity extends ActionBarActivity {
                                         params.add(conversation_view_arr[0]);
                                         params.add(image);
                                         delete_api.execute(params);
-//                                        animateAndDelete(conversation, conversation_view_arr[0], image);
                                     }
                                 })
                                 .setNegativeButton("No", null)
@@ -611,7 +615,6 @@ public class MainActivity extends ActionBarActivity {
                     @Override
                     public void onAnimationEnd(Animation arg0) {
                         conversations_array.remove(conversation);
-//                        updateIndicies(index);
                         conversatons_adapter.notifyDataSetChanged();
                     }
                     @Override public void onAnimationRepeat(Animation animation) {}

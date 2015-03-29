@@ -12,15 +12,32 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.yass8n.whozthis.R;
+import com.example.yass8n.whozthis.activities.MainActivity;
+import com.example.yass8n.whozthis.activities.WelcomeActivity;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class Global extends Application {
     public static final String AWS_URL = "http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/";
@@ -79,4 +96,100 @@ public class Global extends Application {
             Log.e(e.toString(), " Exception in Global ");
         }
     }
+//EXECUTE WITH:   "new CreateConversationAPI().execute();"
+//    public static class CreateConversationAPI extends AsyncTask<String, Void, JSONObject> {
+//        private int status_code;
+//        @Override
+//        protected void onPreExecute() {
+//        }
+//
+//        @Override
+//        protected JSONObject doInBackground(String... s) {
+//
+//            JSONObject jObject = null;
+//            InputStream inputStream = null;
+//            String result = null;
+//            try {
+//
+//                HttpClient httpClient = new DefaultHttpClient();
+//                HttpContext localContext = new BasicHttpContext();
+////                    HttpPost httpPost = new HttpPost("http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/v1/users/sign_up");
+//                HttpPost httpPost = new HttpPost(Global.AWS_URL + "v1/conversations");
+////                    HttpPost httpPost = new HttpPost("http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/v1/users/friends");
+//
+//                httpPost.setHeader("Accept", "application/json");
+//                httpPost.setHeader("Content-type", "application/json");
+//
+////                httpPost.setEntity(new StringEntity("{\"conversation\":{\"title\":\"hey\",\"user_id\":1},\"phones\":[\"aa\",\"2097402793\"]}"));
+//                StringBuilder sb = new StringBuilder();
+//                sb.append("{");sb.append('"');sb.append("conversation");sb.append('"');sb.append(":");
+//                sb.append("{");sb.append('"');sb.append("title");sb.append('"');sb.append(":");
+//                sb.append('"');sb.append("HERE IS THE TITLE");sb.append('"');sb.append(',');
+//                sb.append('"');sb.append("user_id");sb.append('"');sb.append(":");sb.append(WelcomeActivity.current_user.user_id);sb.append("}");sb.append(',');
+//                sb.append('"');sb.append("phones");sb.append('"');sb.append(":");sb.append("[");
+//                for (int i = 0; i < MY_PHONES_ARRAYLIST.size(); i++) {
+//                    sb.append('"');sb.append(MY_PHONES_ARRAYLIST.get(i).phone);sb.append('"');
+//                    if (i != MY_PHONES_ARRAYLIST.size()-1 )
+//                        sb.append(",");
+//                }
+//                sb.append("]");sb.append('}');
+//                String params = sb.toString();
+//                httpPost.setEntity(new StringEntity(params));
+//
+//                HttpResponse response = httpClient.execute(httpPost, localContext);
+//                status_code = response.getStatusLine().getStatusCode();
+//                HttpEntity response_entity = response.getEntity();
+//
+//                inputStream = response_entity.getContent();
+//
+//                // json is UTF-8 by default
+//                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+//                sb = new StringBuilder();
+//
+//                String line = null;
+//                while ((line = reader.readLine()) != null) {
+//                    sb.append(line + "\n");
+//                }
+//
+//                result = sb.toString();
+//
+//                // write response to log
+//                jObject = new JSONObject(result);
+//
+//
+//            } catch (ClientProtocolException e) {
+//                // Log exception
+//                Log.v("CLIENT", "ERROR");
+//
+//                e.printStackTrace();
+//            } catch (IOException e) {
+//                // Log exception
+//                Log.v("IOE", "ERROR");
+//
+//                e.printStackTrace();
+//            } catch (JSONException e) {
+//                Log.v(e.toString(), "ERROR");
+//
+//                e.printStackTrace();
+//            }
+//            return jObject;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(JSONObject result) {
+//            if (status_code == 200) {
+//                try {
+//                    JSONArray conversations = new JSONArray(result.getString("conversations"));
+//                    JSONObject json_conversation = conversations.getJSONObject(0);
+//                    MainActivity.conversations_array.add(MainActivity.createConversation(json_conversation));
+//                    MainActivity.PlaceholderFragment.conversatons_adapter.notifyDataSetChanged();
+//                } catch (JSONException e) {
+//                    Log.e(e.toString(), "JSONError");
+//                }
+//            } else{
+//                Toast.makeText(context, "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
+//            }
+//            super.onPostExecute(result);
+//        }
+//    }
 }
