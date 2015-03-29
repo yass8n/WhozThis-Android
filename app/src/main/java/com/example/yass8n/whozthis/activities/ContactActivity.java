@@ -10,17 +10,22 @@ import android.support.v7.app.ActionBarActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -63,19 +68,10 @@ import java.util.ArrayList;
 public class ContactActivity extends ActionBarActivity {
     public static ArrayList<User> objectsArrayOriginal; //lists, users, contacts...array of objects to display everything in the adapter
     public static ArrayList<User> invited_people;
-    public static final int HEADER = -1;
-    public static final int CREATE_NEW = -2;
-    public static final int CONTACT_OR_USER = -3;
-    public static final int LIST = -4;
     public static ArrayList<User> objectsArrayForAdapter;
     public static EditText search_field;
-    public static final int POSITION_OF_FIRST_LIST = 2;
-    public static View last_touched_view;
-
     private static UsersAdapter adapter;
-    private int invite_id;
     private PinnedSectionListView list_contact_view;
-    private static final int NUM_HEADERS = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,14 +98,10 @@ public class ContactActivity extends ActionBarActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//        if (id == R.id.sign_out) {
-//            getSharedPreferences("user", Context.MODE_PRIVATE).edit().clear().commit();
-//            startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
-//        } else if (id == R.id.edit_profile){
-//            startActivity(new Intent(MainActivity.this, ProfileActivity.class));
-//        }
-
+        int id = item.getItemId();
+        if (id == R.id.add) {
+            Toast.makeText(ContactActivity.this, "ADDING", Toast.LENGTH_SHORT).show();
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -134,40 +126,80 @@ public class ContactActivity extends ActionBarActivity {
 
         });
     }
-    public void setInvited(int index) {
-        User user = (User) objectsArrayOriginal.get(index);
-//        updateInvitationDataStructures(user);
-    }
     public void setInviteImage() {
-        TextView invite_number = (TextView) findViewById(R.id.invite_number);
-        RelativeLayout invite_container = (RelativeLayout) findViewById(R.id.invite_bubble_container);
-        ImageView top_image = (ImageView) findViewById(R.id.invite_picture);
-        TextView first_letter = (TextView) findViewById(R.id.invite_letter);
-
+        final RelativeLayout invite_bar = (RelativeLayout) findViewById(R.id.invited_bar);
+        final RelativeLayout list_contact_view_container = (RelativeLayout) findViewById(R.id.list_contact_scroll_container);
+        ImageView chosen_display_pic = (ImageView) findViewById(R.id.chosen_display_pic);
+        TextView chosen_name = (TextView) findViewById(R.id.chosen_name);
+        final LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) list_contact_view_container.getLayoutParams();
         int size = invited_people.size();
         if (size > 0) {
-            if (size > 99) {
-                invite_number.setText("...");
-            }else {
-                invite_number.setText(Integer.toString(size));
-            }
-            invite_container.setVisibility(View.VISIBLE);
-            User p = invited_people.get(invited_people.size()-1);
-            if (p instanceof User){
-                User last_user = (User) p;
-                if (!Global.empty(last_user.filename)) {
-                    Picasso.with(ContactActivity.this)
-                            .cancelRequest(top_image);
+            if (invite_bar.getVisibility() == View.GONE) {
+                Animation slide_in_bottom = AnimationUtils.loadAnimation(getApplicationContext(),
+                        R.anim.slide_in_bottom);
+                Animation.AnimationListener al = new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationEnd(Animation arg0) {
+                        invite_bar.setVisibility(View.VISIBLE);
+                        float height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 50, getResources().getDisplayMetrics());
+                        params.setMargins(0, 0, 0, (int) height); //left,top,right,bottom
+                        list_contact_view_container.setLayoutParams(params);
+                        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                    }
 
-                    Picasso.with(ContactActivity.this)
-                            .load(last_user.filename)
-                            .into(top_image);
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {}
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+                        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                    }
+                };
+                slide_in_bottom.setAnimationListener(al);
+                invite_bar.startAnimation(slide_in_bottom);
+            }
+            User chosen_user = invited_people.get(invited_people.size()-1);
+
+            chosen_name.setText(chosen_user.first_name + " " + chosen_user.last_name);
+            if (!Global.empty(chosen_user.filename)) {
+                Picasso.with(ContactActivity.this)
+                        .cancelRequest(chosen_display_pic);
+
+                Picasso.with(ContactActivity.this)
+                        .load(chosen_user.filename)
+                        .into(chosen_display_pic);
+            }
+            else if (Global.empty(chosen_user.last_name)){
+//                this is a contact
+                chosen_display_pic.setImageResource(chosen_user.color);
+            }
+            else {
+                //this is a friend without a picture uploaded
+                chosen_display_pic.setImageResource(R.drawable.single_pic);
+            }
+        } else { //no one invited anymore
+            Animation slide_out_bottom = AnimationUtils.loadAnimation(getApplicationContext(),
+                    R.anim.slide_out_bottom);
+            Animation.AnimationListener al = new Animation.AnimationListener() {
+                @Override
+                public void onAnimationEnd(Animation arg0) {
+                    invite_bar.setVisibility(View.GONE);
+                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                 }
-                first_letter.setText("");
-            }
 
-        } else { //no one invited yet
-            invite_container.setVisibility(View.INVISIBLE);
+                @Override
+                public void onAnimationRepeat(Animation animation) {}
+                @Override
+                public void onAnimationStart(Animation animation) {
+                    getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                    params.setMargins(0, 0, 0, 0); //left,top,right,bottom
+                    list_contact_view_container.setLayoutParams(params);
+
+                }
+            };
+            slide_out_bottom.setAnimationListener(al);
+            invite_bar.startAnimation(slide_out_bottom);
         }
     }
 
@@ -251,6 +283,7 @@ public class ContactActivity extends ActionBarActivity {
                         invited_people.remove(item);
                     }
                     search_field.setText("");
+                    setInviteImage();
                     adapter.notifyDataSetChanged();
                 }
             });

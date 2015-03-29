@@ -38,7 +38,7 @@
             <RelativeLayout
                 android:layout_width="0dp"
                 android:layout_height="40dp"
-                android:layout_weight="85"
+                android:layout_weight="100"
                 >
 
                 <EditText
@@ -55,78 +55,13 @@
 
             </RelativeLayout>
 
-            <RelativeLayout
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="15"
-                android:id="@+id/invite_bubble_container"
-                android:layout_gravity="left"
-                android:visibility="invisible"
-                android:orientation="horizontal">
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_marginRight="6dp"
-                    android:layout_alignParentRight="true"
-                    android:layout_height="match_parent">
-                    <com.makeramen.RoundedImageView
-                        xmlns:app="http://schemas.android.com/apk/res-auto"
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:src="@drawable/single_pic"
-                        android:scaleType="fitCenter"
-                        android:layout_gravity="center"
-                        android:id="@+id/invite_picture"
-                        android:layout_centerVertical="true"
-                        android:layout_centerInParent="true"
-                        android:layout_marginRight="3dp"
-                        app:riv_oval="true" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/invite_letter"
-                        android:textSize="28dp"
-                        android:layout_centerInParent="true"
-                        android:textColor="@color/white"/>
-                </RelativeLayout>
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_marginRight="3dp"
-                    android:layout_alignParentRight="true"
-                    android:layout_height="match_parent">
-                    <RelativeLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentRight="true"
-                        android:layout_alignParentBottom="true"
-                        >
-                        <com.makeramen.RoundedImageView
-                            xmlns:app="http://schemas.android.com/apk/res-auto"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_centerVertical="true"
-                            android:layout_centerHorizontal="true"
-                            android:gravity="center"
-                            android:layout_centerInParent="true"
-                            android:src="@color/blue"
-                            android:scaleType="fitCenter"
-                            app:riv_oval="true" />
-                        <TextView
-                            android:layout_centerVertical="true"
-                            android:layout_centerHorizontal="true"
-                            android:id="@+id/invite_number"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="17dp"
-                            android:gravity="center"
-                            android:layout_centerInParent="true"
-                            android:textColor="@color/white"/>
-                        />
-                    </RelativeLayout>
-                </RelativeLayout>
-            </RelativeLayout>
-
         </LinearLayout>
         <!--Search bar ends-->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/list_contact_scroll_container">
+
         <com.example.yass8n.whozthis.objects.PinnedSectionListView
             android:id="@+id/list_contact_scroll"
             android:layout_width="match_parent"
@@ -138,7 +73,63 @@
             android:divider="@null"
             android:dividerHeight="0dp"
             />
+        </RelativeLayout>
 
         <!-- Contains the whole layout end-->
     </LinearLayout>
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:custom="http://schemas.android.com/apk/res-auto"
+        android:layout_alignParentBottom="true"
+        android:layout_width="wrap_content"
+        android:clickable="true"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:background="@color/app_green"
+        android:id="@+id/invited_bar">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:animateLayoutChanges="true"
+            android:weightSum="3">
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_marginLeft="6dp"
+                android:layout_gravity="center" >
+
+                <com.makeramen.RoundedImageView
+                    xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:id="@+id/chosen_display_pic"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="3dp"
+                    android:layout_marginStart="3dp"
+                    android:src="@drawable/single_pic"
+                    android:scaleType="centerCrop"
+                    app:riv_oval="true"
+                    android:cropToPadding="false" />
+
+            </RelativeLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/chosen_name"
+                android:layout_gravity="center"
+                android:textColor="@color/dark_gray"
+                android:text="@string/first_name"
+                android:textSize="17dp"
+                android:gravity="center|start"
+                android:layout_weight="3"
+                android:layout_marginLeft="8sp"
+                android:layout_marginStart="8sp"
+                />
+        </LinearLayout>
+    </RelativeLayout>
 </RelativeLayout>

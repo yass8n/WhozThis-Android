@@ -1,5 +1,7 @@
 package com.example.yass8n.whozthis.activities;
-
+/**
+ * Created by yass8n on 3/10/15.
+ */
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;

@@ -57,6 +57,11 @@ public class User {
         if(other == this) return true;
         if(!(other instanceof User)) return false;
         User user = (User)other;
-        return user_id == user.user_id;
+        if (user_id != 0) {
+            return  user_id == user.user_id;
+        }
+        else {
+            return index == user.index;
+        }
     }
 }

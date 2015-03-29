@@ -1,5 +1,7 @@
 package com.example.yass8n.whozthis.activities;
-
+/**
+ * Created by yass8n on 3/08/15.
+ */
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;

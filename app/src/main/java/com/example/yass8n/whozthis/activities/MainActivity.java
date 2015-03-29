@@ -1,5 +1,7 @@
 package com.example.yass8n.whozthis.activities;
-
+/**
+ * Created by yass8n on 3/08/15.
+ */
 import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -230,19 +232,10 @@ public class MainActivity extends ActionBarActivity {
 
                     HttpClient httpClient = new DefaultHttpClient();
                     HttpContext localContext = new BasicHttpContext();
-//                    HttpPost httpPost = new HttpPost("http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/v1/users/sign_up");
                     HttpPost httpPost = new HttpPost(Global.AWS_URL + "v1/users/friends");
-//                    HttpPost httpPost = new HttpPost("http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/api/v1/users/friends");
 
                     httpPost.setHeader("Accept", "application/json");
                     httpPost.setHeader("Content-type", "application/json");
-
-                    MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-
-//                    httpPost.setEntity(new StringEntity("{\"user\":{\"password\":\"aa\",\"phone\":\"aa\",\"first_name\":\"aa\",\"last_name\":\"aa\"}}"));
-//                    httpPost.setEntity(new StringEntity("{\"conversation\":{\"title\":\"hey\",\"user_id\":1},\"phones\":[\"aa\",\"2097402793\"]}"));
-//                                                    :["aa","2097402793"]}"
-//                    httpPost.setEntity(new StringEntity("{\"phones\":[\"a\"]}"));
 
                     StringBuilder sb = new StringBuilder();
                     sb.append("{");sb.append('"');sb.append("phones");sb.append('"');sb.append(":");sb.append("[");
@@ -253,7 +246,6 @@ public class MainActivity extends ActionBarActivity {
                     }
                     sb.append("]");sb.append('}');
                     String params = sb.toString();
-                    Global.log(params, " <<<<<<<<");
                     httpPost.setEntity(new StringEntity(params));
 
                     HttpResponse response = httpClient.execute(httpPost, localContext);
@@ -261,7 +253,6 @@ public class MainActivity extends ActionBarActivity {
                     HttpEntity response_entity = response.getEntity();
 
                     inputStream = response_entity.getContent();
-                    // json is UTF-8 by default
                     BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
                     sb = new StringBuilder();
 
@@ -272,7 +263,6 @@ public class MainActivity extends ActionBarActivity {
 
                     result = sb.toString();
 
-                    // write response to log
                     jObject = new JSONObject(result);
 
 
@@ -329,12 +319,6 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         protected void onPreExecute() {
-            // Things to be done before execution of long running operation. For
-            // example showing ProgessDialog
-//                getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-//                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-//                ImageView container = (ImageView) findViewById(R.id.start_up);
-//                container.setVisibility(View.VISIBLE);
         }
 
     }
@@ -505,7 +489,6 @@ public class MainActivity extends ActionBarActivity {
 //                GetStreamAPI task = new GetStreamAPI();
 //                task.execute();
             if (v.getId() == R.id.create_message ) {
-                Toast.makeText(context, "Go to Contact Activity", Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(getActivity(), ContactActivity.class));
             }
         }
@@ -835,39 +818,7 @@ public class MainActivity extends ActionBarActivity {
 
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
-//            View view = convertView;
-//            final UserListViewHolder view_holder = new UserListViewHolder();
-//            if (view == null) {
-//                view = this.inflater.inflate(R.layout.users_list_fragment, parent, false);
-//                setViewHolder(view, view_holder);
-//            }
-//            UserListViewHolder holder = (UserListViewHolder) view.getTag();
-//            User user = this.user_array.get(position);
-//            Log.v(Integer.toString(user.user_id), "<<<<<<<USER_ID<<<<<<<<<");
-//            Log.v(Integer.toString(position), "<<<<<<<POSITION<<<<<<<<<");
-//
-//            if (position == 0){
-//                Log.v("HERRRRRRRRRRR", "<<<<<<<<<");
-//                view = this.inflater.inflate(R.layout.modal_header, parent, false);
-//                TextView textView = (TextView) view.findViewById(R.id.header);
-//                textView.setText("People in the conversation");
-//                view.setTag(view_holder);
-//                return view;
-//
-//            } else {
-//                holder.full_name.setText(user.first_name + " " + user.last_name);
-//                if (!Global.empty(user.filename)) {
-//                    Picasso.with(getActivity())
-//                            .cancelRequest(holder.display_pic);
-//                    Picasso.with(getActivity())
-//                            .load(user.filename)
-//                            .into(holder.display_pic);
-//                } else {
-//                    holder.display_pic.setImageResource(R.drawable.single_pic);
-//                }
-//            }
-//            return view;
-                if (position == 0){ //This is the HEADER
+                if (position == 0) { //This is the HEADER
                     View view = this.inflater.inflate(R.layout.modal_header, parent, false);
                     TextView textView = (TextView) view.findViewById(R.id.header);
                     textView.setText("People in the conversation");
@@ -890,11 +841,6 @@ public class MainActivity extends ActionBarActivity {
                     }
                     return view;
                 }
-            }
-            private void setViewHolder(View view, UserListViewHolder view_holder){
-                view_holder.full_name = (TextView) view.findViewById(R.id.full_name);
-                view_holder.display_pic = (ImageView) view.findViewById(R.id.display_pic);
-                view.setTag(view_holder);
             }
 
         }
