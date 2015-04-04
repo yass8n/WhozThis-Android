@@ -2,6 +2,7 @@ package com.example.yass8n.whozthis.activities;
 /**
  * Created by yass8n on 3/08/15.
  */
+import android.content.pm.ActivityInfo;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
@@ -28,6 +29,7 @@ public class WelcomeActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_holder);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()

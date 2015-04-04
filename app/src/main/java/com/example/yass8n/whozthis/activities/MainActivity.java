@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -95,6 +96,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         //https://radiant-inferno-906.firebaseio.com   this is the URL where our data will be stored
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         context = this;
         Firebase.setAndroidContext(this);
         firebase = new Firebase("https://radiant-inferno-906.firebaseio.com/");
@@ -494,7 +496,8 @@ public class MainActivity extends ActionBarActivity {
 //                GetStreamAPI task = new GetStreamAPI();
 //                task.execute();
             if (v.getId() == R.id.create_message ) {
-                startActivity(new Intent(getActivity(), ContactActivity.class));
+                Toast.makeText(context, "Go to Contact Activity", Toast.LENGTH_SHORT).show();
+//                startActivity(new Intent(getActivity(), ContactActivity.class));
             }
         }
 
