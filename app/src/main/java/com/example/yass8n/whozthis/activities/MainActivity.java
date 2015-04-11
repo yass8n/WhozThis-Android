@@ -497,7 +497,7 @@ public class MainActivity extends ActionBarActivity {
 //                task.execute();
             if (v.getId() == R.id.create_message ) {
                 Toast.makeText(context, "Go to Contact Activity", Toast.LENGTH_SHORT).show();
-//                startActivity(new Intent(getActivity(), ContactActivity.class));
+                startActivity(new Intent(getActivity(), ContactActivity.class));
             }
         }
 

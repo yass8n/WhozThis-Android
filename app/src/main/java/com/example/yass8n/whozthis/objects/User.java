@@ -8,6 +8,8 @@ import java.util.InputMismatchException;
 
 /**
  * Created by yass8n on 3/16/15.
+ * Users have a user_id that does NOT == 0
+ * contacts have a user_id that DOES equal 0
  */
 public class User {
     public String phone;

@@ -112,9 +112,10 @@
                 android:layout_width="70dp"
                 android:layout_height="30dp"
                 android:layout_marginBottom="42dp"
-                android:textSize="18dp"
+                android:textSize="18sp"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="Change"
+                android:text="@string/change"
+                android:textColor="@color/dark_blue"
                 android:clickable="true"
                 android:id="@+id/change_pic"
                 android:gravity="center|top" />
@@ -127,6 +128,33 @@
             android:visibility="gone"
             android:alpha=".5"/>
     </RelativeLayout>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/blocked_users"
+            android:textColor="@color/dark_blue"
+            android:id="@+id/block"
+            android:textSize="18sp"
+            android:layout_gravity="center"
+            />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+            <LinearLayout
+                android:id="@+id/profile_pics"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                />
+        </HorizontalScrollView>
+
+    </LinearLayout>
     <ProgressBar
         android:id="@+id/progressBar1"
         style="?android:attr/progressBarStyleLarge"
@@ -135,5 +163,6 @@
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:visibility="gone" />
+
 
 </RelativeLayout>

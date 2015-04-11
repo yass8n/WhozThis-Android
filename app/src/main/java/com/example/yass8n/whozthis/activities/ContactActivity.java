@@ -62,15 +62,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 
 public class ContactActivity extends ActionBarActivity {
     public static ArrayList<User> objectsArrayOriginal; //lists, users, contacts...array of objects to display everything in the adapter
-    public static ArrayList<User> invited_people;
+    public static Set invited_people;
     public static ArrayList<User> objectsArrayForAdapter;
     public static EditText search_field;
     private static UsersAdapter adapter;
+    private String menu_text = "Add";
     private PinnedSectionListView list_contact_view;
 
     @Override
@@ -91,7 +94,13 @@ public class ContactActivity extends ActionBarActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_contact, menu);
-        return true;
+        return super.onCreateOptionsMenu(menu);
+    }
+    @Override
+    public boolean onPrepareOptionsMenu (Menu menu){
+        MenuItem bedMenuItem = menu.findItem(R.id.add);
+        bedMenuItem.setTitle(menu_text);
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -107,7 +116,15 @@ public class ContactActivity extends ActionBarActivity {
     }
 
     public void initializeVariables() {
-        invited_people = new ArrayList<User>();
+        Bundle b = ContactActivity.this.getIntent().getExtras();
+        if (b != null) {
+            if (b.containsKey("block")) {
+                if (b.getBoolean("block")) {
+                    menu_text = "Block";
+                }
+            }
+        }
+        invited_people = new LinkedHashSet();
         list_contact_view = (PinnedSectionListView) findViewById(R.id.list_contact_scroll);
         adapter = new UsersAdapter();
         list_contact_view.setAdapter(adapter);
@@ -159,7 +176,11 @@ public class ContactActivity extends ActionBarActivity {
                 slide_in_bottom.setAnimationListener(al);
                 invite_bar.startAnimation(slide_in_bottom);
             }
-            User chosen_user = invited_people.get(invited_people.size()-1);
+            Iterator<User> itr = invited_people.iterator();
+            User chosen_user = null;
+            for(int i = 0; itr.hasNext(); i++) {
+                chosen_user = itr.next(); //getting last person in set
+            }
 
             chosen_name.setText(chosen_user.first_name + " " + chosen_user.last_name);
             if (!Global.empty(chosen_user.filename)) {

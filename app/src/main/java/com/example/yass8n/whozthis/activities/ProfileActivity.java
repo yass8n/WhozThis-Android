@@ -28,12 +28,14 @@ import android.view.ViewGroup;
 import android.os.Build;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.yass8n.whozthis.R;
 import com.example.yass8n.whozthis.objects.Global;
+import com.example.yass8n.whozthis.objects.User;
 import com.squareup.picasso.Picasso;
 
 import org.apache.http.HttpEntity;
@@ -60,6 +62,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Iterator;
 
 public class ProfileActivity extends ActionBarActivity {
     public static Context context;
@@ -121,10 +124,12 @@ public class ProfileActivity extends ActionBarActivity {
         private static EditText f_name;
         private static EditText l_name;
         private static TextView name;
+        private TextView block;
         private static TextView change_pic;
         private static ProgressBar spinner;
         private static ImageView faded_screen;
         private static boolean image_was_uploaded = false;
+        private LinearLayout profile_pics;
         public PlaceholderFragment() {
         }
 
@@ -135,13 +140,17 @@ public class ProfileActivity extends ActionBarActivity {
             f_name = (EditText)rootView.findViewById(R.id.first_name);
             l_name = (EditText)rootView.findViewById(R.id.last_name);
             faded_screen = (ImageView) rootView.findViewById(R.id.faded);
+            profile_pics = (LinearLayout) rootView.findViewById(R.id.profile_pics);
+            block = (TextView) rootView.findViewById(R.id.block);
             spinner = (ProgressBar)rootView.findViewById(R.id.profile_progress);
             spinner.bringToFront();
             profile_pic = (ImageView) rootView.findViewById(R.id.profile_pic);
             change_pic = (TextView) rootView.findViewById(R.id.change_pic);
             profile_pic.setOnClickListener(this);
             change_pic.setOnClickListener(this);
+            block.setOnClickListener(this);
             loadData();
+            setBlockedProfilePics();
             return rootView;
         }
         @Override
@@ -154,6 +163,10 @@ public class ProfileActivity extends ActionBarActivity {
             if (v.getId() == R.id.change_pic || v.getId() == R.id.profile_pic){
                 //this intent accesses the users pictures
                 startActivityForResult(new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI), SELECT_IMAGE);
+            } else if (v.getId() == R.id.block) {
+                Intent intent = new Intent(getActivity(), ContactActivity.class);
+                intent.putExtra("block", true);
+                startActivity(intent);
             }
         }
         @Override
@@ -194,6 +207,35 @@ public class ProfileActivity extends ActionBarActivity {
                         .into(profile_pic);
             } else {
                 profile_pic.setImageResource(R.drawable.single_pic);
+            }
+        }
+        private void setBlockedProfilePics() {
+            LayoutInflater inflater = activity.getLayoutInflater();
+            if ( ContactActivity.invited_people != null) {
+                Iterator<User> itr = ContactActivity.invited_people.iterator();
+                User person;
+                for (int i = 0; itr.hasNext(); i++) {
+                    person = itr.next();
+                    View profile_pic_view = inflater.inflate(R.layout.profile_rounded_fragment, profile_pics, false);
+                    TextView profile_pic_text = (TextView) profile_pic_view.findViewById(R.id.profile_pic_text);
+                    ImageView profile_pic = (ImageView) profile_pic_view.findViewById(R.id.profile_pic);
+                    if (person.user_id == 0) {
+                        profile_pic_text.setText(Character.toString(person.first_name.charAt(0)).toUpperCase());
+                        profile_pic.setImageResource(person.color);
+                    } else {
+                        profile_pic_text.setText("");
+                        if (!Global.empty(person.filename)) {
+                            Picasso.with(activity)
+                                    .load(person.filename)
+                                    .into(profile_pic);
+                        } else {
+                            profile_pic.setImageResource(R.drawable.single_pic);
+                        }
+                    }
+
+                    profile_pics.addView(profile_pic_view);
+
+                }
             }
         }
         public static class SaveProfileTask extends AsyncTask<Void, Void, JSONObject> {

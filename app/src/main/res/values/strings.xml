@@ -13,7 +13,7 @@
     <string name="sign_out">Sign Out</string>
     <string name="edit_profile">Edit Profile</string>
     <string name="title_activity_profile">Edit Profile</string>
-    <string name="title_activity_contact">Select Friends</string>
+    <string name="title_activity_contact">Select People</string>
     <string name="people_in_convo">People in the conversation</string>
     <string name="last_name">Last Name</string>
     <string name="save">Save</string>
@@ -22,5 +22,7 @@
     <string name="title_activity_new_messages">New Message</string>
     <string name="add">Add</string>
     <string name="friends">Friends</string>
+    <string name="blocked_users"><u>Blocked Users</u></string>
+    <string name="change">Change</string>
 
 </resources>
