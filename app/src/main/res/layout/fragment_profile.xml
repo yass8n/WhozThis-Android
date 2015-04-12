@@ -18,6 +18,7 @@
             android:layout_weight="1"
             android:focusableInTouchMode="true"
             android:focusable="true"
+            android:id="@+id/name_container"
             android:gravity="center" >
 
             <EditText
@@ -34,7 +35,7 @@
             <ImageView
                 android:layout_width="1dp"
                 android:layout_height="40dp"
-                android:src="@color/lighter_gray"/>
+                android:src="@color/border_gray"/>
 
             <EditText
                 android:id="@+id/last_name"
@@ -46,6 +47,7 @@
                 android:hint="@string/last_name"
                 android:paddingLeft="10dp"
                 android:inputType="textCapWords" />
+
 
         </LinearLayout>
 
@@ -128,9 +130,20 @@
             android:visibility="gone"
             android:alpha=".5"/>
     </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_above="@+id/blocked_container">
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/border_gray"/>
+    </RelativeLayout>
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="100dp"
+        android:background="@color/white"
+        android:id="@+id/blocked_container"
         android:layout_alignParentBottom="true"
         android:orientation="vertical">
         <TextView
@@ -139,6 +152,8 @@
             android:text="@string/blocked_users"
             android:textColor="@color/dark_blue"
             android:id="@+id/block"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
             android:textSize="18sp"
             android:layout_gravity="center"
             />

@@ -22,7 +22,7 @@
     <string name="title_activity_new_messages">New Message</string>
     <string name="add">Add</string>
     <string name="friends">Friends</string>
-    <string name="blocked_users"><u>Blocked Users</u></string>
+    <string name="blocked_users">Block Users</string>
     <string name="change">Change</string>
 
 </resources>

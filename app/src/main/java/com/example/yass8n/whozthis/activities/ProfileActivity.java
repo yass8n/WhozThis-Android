@@ -63,10 +63,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class ProfileActivity extends ActionBarActivity {
     public static Context context;
     public static Activity activity;
+    public static Set blocked_people;
     public String base64Bitmap;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +89,10 @@ public class ProfileActivity extends ActionBarActivity {
 //        MediaStore.Images.Media.insertImage(getContentResolver(), icon, "ic_launcher" , "testing");
 
     }
-
+    @Override
+    public void onBackPressed() {
+        finish();
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -136,6 +142,9 @@ public class ProfileActivity extends ActionBarActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
+            if (blocked_people == null) {
+                blocked_people = new LinkedHashSet();
+            }
             View rootView = inflater.inflate(R.layout.fragment_profile, container, false);
             f_name = (EditText)rootView.findViewById(R.id.first_name);
             l_name = (EditText)rootView.findViewById(R.id.last_name);
@@ -211,10 +220,9 @@ public class ProfileActivity extends ActionBarActivity {
         }
         private void setBlockedProfilePics() {
             LayoutInflater inflater = activity.getLayoutInflater();
-            if ( ContactActivity.invited_people != null) {
-                Iterator<User> itr = ContactActivity.invited_people.iterator();
+                Iterator<User> itr = blocked_people.iterator();
                 User person;
-                for (int i = 0; itr.hasNext(); i++) {
+                while (itr.hasNext()) {
                     person = itr.next();
                     View profile_pic_view = inflater.inflate(R.layout.profile_rounded_fragment, profile_pics, false);
                     TextView profile_pic_text = (TextView) profile_pic_view.findViewById(R.id.profile_pic_text);
@@ -236,7 +244,6 @@ public class ProfileActivity extends ActionBarActivity {
                     profile_pics.addView(profile_pic_view);
 
                 }
-            }
         }
         public static class SaveProfileTask extends AsyncTask<Void, Void, JSONObject> {
             private int status_code;

@@ -62,6 +62,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -69,7 +70,7 @@ import java.util.Set;
 
 public class ContactActivity extends ActionBarActivity {
     public static ArrayList<User> objectsArrayOriginal; //lists, users, contacts...array of objects to display everything in the adapter
-    public static Set invited_people;
+    public static Set selected_people;
     public static ArrayList<User> objectsArrayForAdapter;
     public static EditText search_field;
     private static UsersAdapter adapter;
@@ -110,7 +111,22 @@ public class ContactActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.add) {
-            Toast.makeText(ContactActivity.this, "ADDING", Toast.LENGTH_SHORT).show();
+            if (menu_text.equals("Block")){
+                Iterator<User> itr = selected_people.iterator();
+                User person;
+                while (itr.hasNext()) {
+                    person = itr.next();
+                    ProfileActivity.blocked_people.add(person);
+                }
+                ProfileActivity.activity.finish();
+                Intent intent = new Intent(ContactActivity.this, ProfileActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                //add Intent.FLAG_ACTIVITY_CLEAR_TOP and the finish() below so the activity gets destroyed and we cant go back to it when the user presses the back button
+                startActivity(intent);
+                finish();
+            }else {
+                Toast.makeText(ContactActivity.this, "ADDING", Toast.LENGTH_SHORT).show();
+            }
         }
         return super.onOptionsItemSelected(item);
     }
@@ -124,7 +140,7 @@ public class ContactActivity extends ActionBarActivity {
                 }
             }
         }
-        invited_people = new LinkedHashSet();
+        selected_people = new LinkedHashSet();
         list_contact_view = (PinnedSectionListView) findViewById(R.id.list_contact_scroll);
         adapter = new UsersAdapter();
         list_contact_view.setAdapter(adapter);
@@ -150,7 +166,7 @@ public class ContactActivity extends ActionBarActivity {
         ImageView chosen_display_pic = (ImageView) findViewById(R.id.chosen_display_pic);
         TextView chosen_name = (TextView) findViewById(R.id.chosen_name);
         final LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) list_contact_view_container.getLayoutParams();
-        int size = invited_people.size();
+        int size = selected_people.size();
         if (size > 0) {
             if (invite_bar.getVisibility() == View.GONE) {
                 Animation slide_in_bottom = AnimationUtils.loadAnimation(getApplicationContext(),
@@ -176,9 +192,9 @@ public class ContactActivity extends ActionBarActivity {
                 slide_in_bottom.setAnimationListener(al);
                 invite_bar.startAnimation(slide_in_bottom);
             }
-            Iterator<User> itr = invited_people.iterator();
+            Iterator<User> itr = selected_people.iterator();
             User chosen_user = null;
-            for(int i = 0; itr.hasNext(); i++) {
+            while(itr.hasNext()) {
                 chosen_user = itr.next(); //getting last person in set
             }
 
@@ -242,16 +258,20 @@ public class ContactActivity extends ActionBarActivity {
             for (int i = 0; i < MainActivity.friends_array.size(); i++) {
                 User friend = MainActivity.friends_array.get(i);
                 friend.index = index;
+                friend.checked = false;
                 index++;
                 objectsArrayForAdapter.add(friend);
             }
-            for (int i = 0; i < MainActivity.contacts_in_phone.size(); i++) {
-                User contact = MainActivity.contacts_in_phone.get(i);
-                contact.color = Global.colorArray[i % Global.colorArray.length];
-                contact.last_name = "";
-                contact.index = index;
-                index++;
-                objectsArrayForAdapter.add(contact);
+            if (menu_text.equals("Add")) {
+                for (int i = 0; i < MainActivity.contacts_in_phone.size(); i++) {
+                    User contact = MainActivity.contacts_in_phone.get(i);
+                    contact.color = Global.colorArray[i % Global.colorArray.length];
+                    contact.last_name = "";
+                    contact.checked = false;
+                    contact.index = index;
+                    index++;
+                    objectsArrayForAdapter.add(contact);
+                }
             }
             objectsArrayOriginal = new ArrayList<User>(objectsArrayForAdapter);
         }
@@ -300,16 +320,15 @@ public class ContactActivity extends ActionBarActivity {
                 public void onClick(View v) {
                     item.checked = !(item.checked);
                     if (item.checked) {
-                        invited_people.add(item);
+                        selected_people.add(item);
                     } else {
-                        invited_people.remove(item);
+                        selected_people.remove(item);
                     }
                     search_field.setText("");
                     setInviteImage();
                     adapter.notifyDataSetChanged();
                 }
             });
-
             if (item.checked && item.index != 0) {
                 holder.checkmark.setImageResource(R.mipmap.attending);
             } else {

@@ -440,6 +440,7 @@ public class MainActivity extends ActionBarActivity {
             }
             super.onPostExecute(result);
         }
+
         public static ArrayList<User> createUserList(JSONArray users) {
             ArrayList<User> user_list = new ArrayList<User>();
             try {
