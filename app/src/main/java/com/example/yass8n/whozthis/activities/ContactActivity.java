@@ -116,7 +116,7 @@ public class ContactActivity extends ActionBarActivity {
                 User person;
                 while (itr.hasNext()) {
                     person = itr.next();
-                    ProfileActivity.blocked_people.add(person);
+                    MainActivity.blocked_people.add(person);
                 }
                 ProfileActivity.activity.finish();
                 Intent intent = new Intent(ContactActivity.this, ProfileActivity.class);

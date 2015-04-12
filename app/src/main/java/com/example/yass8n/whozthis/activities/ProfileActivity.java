@@ -69,7 +69,6 @@ import java.util.Set;
 public class ProfileActivity extends ActionBarActivity {
     public static Context context;
     public static Activity activity;
-    public static Set blocked_people;
     public String base64Bitmap;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,9 +108,9 @@ public class ProfileActivity extends ActionBarActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.save) {
-                PlaceholderFragment.SaveProfileTask save_profile = new PlaceholderFragment.SaveProfileTask();
-                save_profile.execute();
-                return true;
+            PlaceholderFragment.SaveProfileTask save_profile = new PlaceholderFragment.SaveProfileTask();
+            save_profile.execute();
+            return true;
         } else if (id == R.id.sign_out) {
             getSharedPreferences("user", Context.MODE_PRIVATE).edit().clear().commit();
             startActivity(new Intent(activity, WelcomeActivity.class));
@@ -142,9 +141,6 @@ public class ProfileActivity extends ActionBarActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            if (blocked_people == null) {
-                blocked_people = new LinkedHashSet();
-            }
             View rootView = inflater.inflate(R.layout.fragment_profile, container, false);
             f_name = (EditText)rootView.findViewById(R.id.first_name);
             l_name = (EditText)rootView.findViewById(R.id.last_name);
@@ -220,30 +216,23 @@ public class ProfileActivity extends ActionBarActivity {
         }
         private void setBlockedProfilePics() {
             LayoutInflater inflater = activity.getLayoutInflater();
-                Iterator<User> itr = blocked_people.iterator();
-                User person;
-                while (itr.hasNext()) {
-                    person = itr.next();
-                    View profile_pic_view = inflater.inflate(R.layout.profile_rounded_fragment, profile_pics, false);
-                    TextView profile_pic_text = (TextView) profile_pic_view.findViewById(R.id.profile_pic_text);
-                    ImageView profile_pic = (ImageView) profile_pic_view.findViewById(R.id.profile_pic);
-                    if (person.user_id == 0) {
-                        profile_pic_text.setText(Character.toString(person.first_name.charAt(0)).toUpperCase());
-                        profile_pic.setImageResource(person.color);
-                    } else {
-                        profile_pic_text.setText("");
-                        if (!Global.empty(person.filename)) {
-                            Picasso.with(activity)
-                                    .load(person.filename)
-                                    .into(profile_pic);
-                        } else {
-                            profile_pic.setImageResource(R.drawable.single_pic);
-                        }
-                    }
-
-                    profile_pics.addView(profile_pic_view);
-
+            Iterator<User> itr = MainActivity.blocked_people.iterator();
+            User person;
+            while (itr.hasNext()) {
+                person = itr.next();
+                View profile_pic_view = inflater.inflate(R.layout.profile_rounded_fragment, profile_pics, false);
+                ImageView profile_pic = (ImageView) profile_pic_view.findViewById(R.id.profile_pic);
+                if (!Global.empty(person.filename)) {
+                    Picasso.with(activity)
+                            .load(person.filename)
+                            .into(profile_pic);
+                } else {
+                    profile_pic.setImageResource(R.drawable.single_pic);
                 }
+
+                profile_pics.addView(profile_pic_view);
+
+            }
         }
         public static class SaveProfileTask extends AsyncTask<Void, Void, JSONObject> {
             private int status_code;

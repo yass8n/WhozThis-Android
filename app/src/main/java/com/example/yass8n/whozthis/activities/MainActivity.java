@@ -73,7 +73,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
@@ -84,6 +86,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 public class MainActivity extends ActionBarActivity {
     public static Firebase firebase;
     public static Context context;
+    public static Set blocked_people = new LinkedHashSet();
     public static ArrayList<Conversation> conversations_array = new ArrayList<Conversation>();
     public static ArrayList<User> friends_array = new ArrayList<>();
     public static int HEADER_ID = -1;
@@ -215,10 +218,10 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         protected void onPostExecute(String result) {
-            UpdateFriendsTask task = new UpdateFriendsTask();
+            UpdateFriendsAPI task = new UpdateFriendsAPI();
             task.execute(phones);
         }
-        public class UpdateFriendsTask extends AsyncTask<ArrayList<String>, Void, JSONObject> {
+        private class UpdateFriendsAPI extends AsyncTask<ArrayList<String>, Void, JSONObject> {
 
             @Override
             protected void onPreExecute() {
@@ -294,7 +297,7 @@ public class MainActivity extends ActionBarActivity {
                         friends_array.clear();
                         for (int i = 0; i < friends.length(); i ++){
                             JSONObject json_user = friends.getJSONObject(i);
-                            friends_array.add(createFriend(json_user.getJSONObject("user")));
+                            friends_array.add(createUser(json_user.getJSONObject("user")));
                         }
                     } catch (JSONException e) {
                         Log.e(e.toString(), "JSONError");
@@ -303,26 +306,28 @@ public class MainActivity extends ActionBarActivity {
                 else {
                     Toast.makeText(context, "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
                 }
+                GetBlockedUsersAPI task = new GetBlockedUsersAPI();
+                task.execute();
                 super.onPostExecute(result);
             }
-        }
-        private User createFriend(JSONObject json_user){
-            User temp_user  = new User();
-            try {
-                temp_user.first_name = json_user.getString("first_name");
-                temp_user.last_name = json_user.getString("last_name");
-                temp_user.filename = "http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/images/" + json_user.getString("filename");
-                temp_user.user_id = json_user.getInt("id");
-            } catch (JSONException e) {
-                Log.v(e.toString(), "JSON ERROR");
-            }
-            return temp_user;
         }
 
         @Override
         protected void onPreExecute() {
         }
 
+    }
+    private User createUser(JSONObject json_user){
+        User temp_user  = new User();
+        try {
+            temp_user.first_name = json_user.getString("first_name");
+            temp_user.last_name = json_user.getString("last_name");
+            temp_user.filename = "http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/images/" + json_user.getString("filename");
+            temp_user.user_id = json_user.getInt("id");
+        } catch (JSONException e) {
+            Log.v(e.toString(), "JSON ERROR");
+        }
+        return temp_user;
     }
     public boolean checkUserLogin(){
         boolean result = true;
@@ -352,20 +357,8 @@ public class MainActivity extends ActionBarActivity {
         GetStreamAPI get_stream = new GetStreamAPI();
         get_stream.execute();
     }
-    public static Conversation createConversation(JSONObject json_conversation){
-        Conversation temp_conversation = new Conversation();
-        try {
-            temp_conversation.title = json_conversation.getString("title");
-            temp_conversation.id = json_conversation.getInt("id");
-            temp_conversation.setDate(json_conversation.getString("created_at"));
-            temp_conversation.users = GetStreamAPI.createUserList(new JSONArray(json_conversation.getString("users")));
-        } catch (JSONException e) {
-            Log.v(e.toString(), "JSON ERROR");
-        }
-        return temp_conversation;
-    }
 
-    public static class GetStreamAPI extends AsyncTask<String, Void, JSONObject> {
+    private class GetStreamAPI extends AsyncTask<String, Void, JSONObject> {
         private int status_code;
         @Override
         protected void onPreExecute() {
@@ -429,7 +422,7 @@ public class MainActivity extends ActionBarActivity {
                     conversations_array.clear();
                     for (int i = 0; i < conversations.length(); i++) {
                         JSONObject json_conversation = conversations.getJSONObject(i);
-                        conversations_array.add(MainActivity.createConversation(json_conversation));
+                        conversations_array.add(createConversation(json_conversation));
                         PlaceholderFragment.conversatons_adapter.notifyDataSetChanged();
                     }
                 } catch (JSONException e) {
@@ -440,8 +433,7 @@ public class MainActivity extends ActionBarActivity {
             }
             super.onPostExecute(result);
         }
-
-        public static ArrayList<User> createUserList(JSONArray users) {
+        private ArrayList<User> createUserList(JSONArray users) {
             ArrayList<User> user_list = new ArrayList<User>();
             try {
                 for (int i = 0; i < users.length(); i++) {
@@ -459,6 +451,96 @@ public class MainActivity extends ActionBarActivity {
                 Log.e(e.toString(), "EXCEPTION");
             }
             return user_list;
+        }
+        private Conversation createConversation(JSONObject json_conversation){
+            Conversation temp_conversation = new Conversation();
+            try {
+                temp_conversation.title = json_conversation.getString("title");
+                temp_conversation.id = json_conversation.getInt("id");
+                temp_conversation.setDate(json_conversation.getString("created_at"));
+                temp_conversation.users = createUserList(new JSONArray(json_conversation.getString("users")));
+            } catch (JSONException e) {
+                Log.v(e.toString(), "JSON ERROR");
+            }
+            return temp_conversation;
+        }
+    }
+    private class GetBlockedUsersAPI extends AsyncTask<String, Void, JSONObject> {
+        private int status_code;
+
+        @Override
+        protected void onPreExecute() {
+        }
+
+        @Override
+        protected JSONObject doInBackground(String... s) {
+            InputStream inputStream = null;
+            String result = null;
+            JSONObject jObject = null;
+
+            try {
+
+                HttpClient httpClient = new DefaultHttpClient();
+                HttpContext localContext = new BasicHttpContext();
+                HttpGet httpGet = new HttpGet(Global.AWS_URL + "v1/users/blocked/" + Integer.toString(WelcomeActivity.current_user.user_id));
+
+                HttpResponse response = httpClient.execute(httpGet, localContext);
+                status_code = status_code = response.getStatusLine().getStatusCode();
+                HttpEntity response_entity = response.getEntity();
+
+                inputStream = response_entity.getContent();
+
+                // json is UTF-8 by default
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+                StringBuilder sb = new StringBuilder();
+
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line + "\n");
+                }
+
+
+                result = sb.toString();
+
+                // write response to log
+                jObject = new JSONObject(result);
+
+            } catch (ClientProtocolException e) {
+                // Log exception
+                Log.v("CLIENT", "ERROR");
+
+                e.printStackTrace();
+            } catch (IOException e) {
+                // Log exception
+                Log.v("IOE", "ERROR");
+
+                e.printStackTrace();
+            } catch (JSONException e) {
+                Log.v("JSON", "ERROR");
+
+                e.printStackTrace();
+            }
+            return jObject;
+        }
+
+        @Override
+        protected void onPostExecute(JSONObject result) {
+            Toast.makeText(MainActivity.this, result.toString(), Toast.LENGTH_LONG).show();
+            if (status_code == 200) {
+                try {
+                    JSONArray blocked = new JSONArray(result.getString("blocked"));
+                    blocked_people.clear();
+                    for (int i = 0; i < blocked.length(); i ++){
+                        JSONObject json_user = blocked.getJSONObject(i);
+                        blocked_people.add(createUser(json_user.getJSONObject("user")));
+                    }
+                } catch (JSONException e) {
+                    Log.e(e.toString(), "JSONError");
+                }
+            } else {
+                Toast.makeText(context, "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
+            }
+            super.onPostExecute(result);
         }
     }
 
@@ -659,7 +741,7 @@ public class MainActivity extends ActionBarActivity {
                 anim.setDuration(600);
                 convo.startAnimation(anim);
             }
-            public class DeleteApi extends AsyncTask<ArrayList<Object>, Void, JSONObject> {
+            private class DeleteApi extends AsyncTask<ArrayList<Object>, Void, JSONObject> {
                 private int status_code;
                 private Conversation conversation;
                 private View conversation_view;
