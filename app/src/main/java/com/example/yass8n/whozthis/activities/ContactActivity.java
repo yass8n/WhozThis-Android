@@ -1,5 +1,7 @@
 package com.example.yass8n.whozthis.activities;
 
+import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -17,6 +19,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -54,6 +57,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -112,23 +116,157 @@ public class ContactActivity extends ActionBarActivity {
         int id = item.getItemId();
         if (id == R.id.add) {
             if (menu_text.equals("Block")){
+                Iterator<User> it = MainActivity.blocked_people.iterator();
+                User perso;
+                while (it.hasNext()) {
+                    perso = it.next();
+                    Log.v(Integer.toString(perso.user_id), " BLOCKED_USER_ID");
+                }
                 Iterator<User> itr = selected_people.iterator();
                 User person;
                 while (itr.hasNext()) {
                     person = itr.next();
+                    Log.v(Integer.toString(person.user_id), " SELECTED_USER_ID");
                     MainActivity.blocked_people.add(person);
                 }
-                ProfileActivity.activity.finish();
-                Intent intent = new Intent(ContactActivity.this, ProfileActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                //add Intent.FLAG_ACTIVITY_CLEAR_TOP and the finish() below so the activity gets destroyed and we cant go back to it when the user presses the back button
-                startActivity(intent);
-                finish();
+                Iterator<User> i = MainActivity.blocked_people.iterator();
+                User pers;
+                while (i.hasNext()) {
+                    pers = i.next();
+                    Log.v(Integer.toString(pers.user_id), " BLOCKED_AFTER_USER_ID");
+                }
+                BlockUsersAPI task = new BlockUsersAPI();
+                task.execute();
+                Handler mHandler = new Handler();
+                mHandler.postDelayed(new Runnable() {
+                    public void run() {
+                        ProfileActivity.activity.finish();
+                        Intent intent = new Intent(ContactActivity.this, ProfileActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        //add Intent.FLAG_ACTIVITY_CLEAR_TOP and the finish() below so the activity gets destroyed and we cant go back to it when the user presses the back button
+                        startActivity(intent);
+                        finish();
+                    }
+                }, 1300);
             }else {
                 Toast.makeText(ContactActivity.this, "ADDING", Toast.LENGTH_SHORT).show();
             }
         }
         return super.onOptionsItemSelected(item);
+    }
+    private class BlockUsersAPI extends AsyncTask<Void, Void, JSONObject> {
+
+        @Override
+        protected void onPreExecute() {
+            DialogBlocked cdd=new DialogBlocked(ContactActivity.this);
+            cdd.show();
+            WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+            lp.copyFrom(cdd.getWindow().getAttributes());
+            RelativeLayout screen_width = (RelativeLayout) findViewById(R.id.contacts);
+            lp.width = screen_width.getWidth() / 2;
+            lp.x = 0;
+            cdd.getWindow().setAttributes(lp);
+            cdd.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+            cdd.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        public class DialogBlocked extends Dialog implements
+                android.view.View.OnClickListener {
+
+            public Activity c;
+
+            DialogBlocked() {
+                super(ContactActivity.this);
+            }
+
+            public DialogBlocked(Activity a) {
+                super(a);
+                // TODO Auto-generated constructor stub
+                this.c = a;
+            }
+
+            @Override
+            protected void onCreate(Bundle savedInstanceState) {
+                super.onCreate(savedInstanceState);
+                requestWindowFeature(Window.FEATURE_NO_TITLE);
+                setContentView(R.layout.dialog_users_blocked);
+
+            }
+            @Override
+            public void onClick(View v) {
+            }
+        }
+
+        @Override
+        protected JSONObject doInBackground(Void... v) {
+
+            JSONObject jObject = null;
+            InputStream inputStream = null;
+            String result = null;
+            try {
+
+                HttpClient httpClient = new DefaultHttpClient();
+                HttpContext localContext = new BasicHttpContext();
+                HttpPost httpPost = new HttpPost(Global.AWS_URL + "v1/blocked_users");
+
+                httpPost.setHeader("Accept", "application/json");
+                httpPost.setHeader("Content-type", "application/json");
+
+                StringBuilder sb = new StringBuilder();
+//                httpPost.setEntity(new StringEntity("{\"conversation\":{\"title\":\"hey\",\"user_id\":1},\"phones\":[\"aa\",\"2097402793\"]}"));
+                sb.append("{");sb.append('"');sb.append("blocked_user");sb.append('"');sb.append(":");
+                sb.append("{");sb.append('"');sb.append("user_id");sb.append('"');sb.append(":");sb.append(WelcomeActivity.current_user.user_id);sb.append(',');
+                sb.append('"');sb.append("blocked_id");sb.append('"');sb.append(":");sb.append("[");
+                Iterator<User> itr = selected_people.iterator();
+                User chosen_user = null;
+                while(itr.hasNext()) {
+                    chosen_user = itr.next(); //getting last person in set
+                    sb.append(chosen_user.user_id);
+                    if (itr.hasNext())
+                        sb.append(",");
+                }
+                sb.append("]");sb.append('}');sb.append('}');
+                String params = sb.toString();
+                httpPost.setEntity(new StringEntity(params));
+
+                HttpResponse response = httpClient.execute(httpPost, localContext);
+                HttpEntity response_entity = response.getEntity();
+
+                inputStream = response_entity.getContent();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+                sb = new StringBuilder();
+
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line + "\n");
+                }
+
+                result = sb.toString();
+
+                jObject = new JSONObject(result);
+
+
+            } catch (ClientProtocolException e) {
+                // Log exception
+                Log.v("CLIENT", "ERROR");
+
+                e.printStackTrace();
+            } catch (IOException e) {
+                // Log exception
+                Log.v("IOE", "ERROR");
+
+                e.printStackTrace();
+            } catch (JSONException e) {
+                Log.v(e.toString(), "ERROR");
+
+                e.printStackTrace();
+            }
+            return jObject;
+        }
+
+        @Override
+        protected void onPostExecute(JSONObject result) {
+            selected_people.clear();
+        }
     }
 
     public void initializeVariables() {

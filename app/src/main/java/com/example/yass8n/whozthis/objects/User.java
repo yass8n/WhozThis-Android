@@ -1,5 +1,6 @@
 package com.example.yass8n.whozthis.objects;
 
+import android.util.Log;
 import android.widget.Toast;
 
 import com.example.yass8n.whozthis.activities.MainActivity;
@@ -51,6 +52,10 @@ public class User {
         if (phone.substring(0,1).equals("1"))
             phone = phone.substring(1);
         return phone;
+    }
+    @Override
+    public int hashCode(){
+        return this.user_id;
     }
 
     @Override

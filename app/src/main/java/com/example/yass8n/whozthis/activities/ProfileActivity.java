@@ -221,7 +221,9 @@ public class ProfileActivity extends ActionBarActivity {
             while (itr.hasNext()) {
                 person = itr.next();
                 View profile_pic_view = inflater.inflate(R.layout.profile_rounded_fragment, profile_pics, false);
+                TextView profile_pic_text = (TextView) profile_pic_view.findViewById(R.id.profile_pic_text);
                 ImageView profile_pic = (ImageView) profile_pic_view.findViewById(R.id.profile_pic);
+                profile_pic_text.setText(Character.toString(person.first_name.charAt(0)).toUpperCase());
                 if (!Global.empty(person.filename)) {
                     Picasso.with(activity)
                             .load(person.filename)
@@ -229,7 +231,6 @@ public class ProfileActivity extends ActionBarActivity {
                 } else {
                     profile_pic.setImageResource(R.drawable.single_pic);
                 }
-
                 profile_pics.addView(profile_pic_view);
 
             }

@@ -317,7 +317,7 @@ public class MainActivity extends ActionBarActivity {
         }
 
     }
-    private User createUser(JSONObject json_user){
+    public static User createUser(JSONObject json_user){
         User temp_user  = new User();
         try {
             temp_user.first_name = json_user.getString("first_name");
@@ -465,7 +465,7 @@ public class MainActivity extends ActionBarActivity {
             return temp_conversation;
         }
     }
-    private class GetBlockedUsersAPI extends AsyncTask<String, Void, JSONObject> {
+    public static class GetBlockedUsersAPI extends AsyncTask<String, Void, JSONObject> {
         private int status_code;
 
         @Override
@@ -525,7 +525,6 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         protected void onPostExecute(JSONObject result) {
-            Toast.makeText(MainActivity.this, result.toString(), Toast.LENGTH_LONG).show();
             if (status_code == 200) {
                 try {
                     JSONArray blocked = new JSONArray(result.getString("blocked"));
