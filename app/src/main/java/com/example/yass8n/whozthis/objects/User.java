@@ -55,7 +55,7 @@ public class User {
     }
     @Override
     public int hashCode(){
-        return this.user_id;
+        return this.user_id * this.first_name.hashCode();
     }
 
     @Override
