@@ -1,33 +1,25 @@
 package com.example.yass8n.whozthis.activities;
 
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageButton;
 
 import com.example.yass8n.whozthis.R;
 
-
-public class NewMessages extends ActionBarActivity {
+public class MessagingActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_new_message);
+        setContentView(R.layout.activity_messaging);
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_new_messages, menu);
+        getMenuInflater().inflate(R.menu.menu_messaging, menu);
         return true;
     }
 
@@ -46,5 +38,3 @@ public class NewMessages extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 }
-
-

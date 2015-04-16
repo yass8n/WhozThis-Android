@@ -1,78 +1,140 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
+    android:background="@color/white"
     android:layout_height="match_parent">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
         android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:weightSum="1">
+        android:paddingTop="5dp"
+        android:layout_width="fill_parent"
+        android:background="@drawable/rounded_border_gray"
+        android:layout_height="wrap_content"
+        android:paddingBottom="5dp"
+        android:layout_alignParentTop="true">
 
         <EditText
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:hint="Phone Number"
-            android:id="@+id/new_message"
-            android:text="New Message"
-            android:textAlignment="center"
-            android:gravity="center"
-            android:clickable="false"
-            android:cursorVisible="false"
-            android:focusable="false"
-            android:focusableInTouchMode="false"
-            />
-
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="30dp"
             android:hint="Message Title"
-            android:id="@+id/editText"
-            android:layout_below="@+id/add_users_button"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
+            android:id="@+id/convo_title"
+            android:background="@drawable/rounded_border"
+            android:paddingLeft="5dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="2dp"
+            android:singleLine="true"
+            android:textAlignment="gravity" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="50dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:weightSum="100"
+            android:background="@drawable/rounded_border"
+            android:orientation="horizontal"
+            android:id="@+id/whoz_it_to">
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_weight="90"
+                android:layout_marginRight="25dp"
+                android:layout_marginEnd="25dp"
+                android:layout_height="wrap_content" >
+                <LinearLayout
+                    android:id="@+id/profile_pics"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    />
+            </HorizontalScrollView>
+            <RelativeLayout
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8dp"
+                >
+
+                <com.makeramen.RoundedImageView
+                    xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:scaleType="centerCrop"
+                    android:src="@color/app_green"
+                    app:riv_border_width="2dip"
+                    app:riv_border_color="@color/lighter_gray"
+                    app:riv_oval="true"
+                    android:onClick="inviteMore"
+                    android:layout_centerInParent="true"
+                    />
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/plus"
+                    android:onClick="inviteMore"
+                    android:layout_centerInParent="true"/>
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/listFooter"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal">
+
 
         <RelativeLayout
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-
-            <EditText
-                android:layout_width="330dp"
-                android:layout_height="50dp"
-
-                android:hint="Whoz it to"
-                android:id="@+id/to_contact"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true" />
-
-            <ImageButton
-                android:layout_width="39dp"
-                android:layout_height="39dp"
-                android:id="@+id/add_users_button"
-                android:background="@drawable/plusbutton"
-                android:paddingLeft="15dp"
-                android:layout_marginRight="10dp"
-                android:layout_marginEnd="44dp"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true" />
+            android:layout_height="100dp">
 
             <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="387dp"
-                android:layout_height="402dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true"
-                android:layout_below="@+id/to_contact">
+                android:background="@drawable/rounded_border_gray"
+                android:paddingTop="5dp"
+                android:orientation="horizontal"
+                android:weightSum="100"
+                android:paddingBottom="5dp"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                >
+
+                <EditText
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:ems="10"
+                    android:id="@+id/text_mess"
+                    android:layout_gravity="center"
+                    android:src="@color/white"
+                    android:layout_weight="100"
+                    android:background="@drawable/rounded_border"
+                    android:layout_alignParentBottom="true"
+                    android:paddingLeft="5dp"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
+                    android:inputType="textMultiLine"
+                    android:isScrollContainer="true"
+                    />
+                <ImageView
+                    android:layout_width="43dp"
+                    android:layout_height="43dp"
+                    android:id="@+id/send_button"
+                    android:src="@drawable/paper_plane"/>
 
             </LinearLayout>
 
         </RelativeLayout>
-
-
     </LinearLayout>
+
+
 </RelativeLayout>

@@ -24,5 +24,6 @@
     <string name="friends">Friends</string>
     <string name="blocked_users">Block Users</string>
     <string name="change">Change</string>
+    <string name="title_activity_messaging">MessagingActivity</string>
 
 </resources>
