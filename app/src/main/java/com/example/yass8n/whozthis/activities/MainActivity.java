@@ -109,17 +109,6 @@ public class MainActivity extends ActionBarActivity {
                     .add(R.id.container, new PlaceholderFragment(), "MAIN")
                     .commit();
         }
-        firebase.child("user_id").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-//                Log.v(snapshot.getValue().toString(), "  <<<<<<<<");
-//                Toast.makeText(MainActivity.this, "the value of user_id is " + snapshot.getValue().toString(), Toast.LENGTH_SHORT).show();
-            }
-
-            @Override public void onCancelled(FirebaseError error) { }
-
-        });
-//        startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
     }
     @Override
     public void onBackPressed(){
@@ -323,6 +312,7 @@ public class MainActivity extends ActionBarActivity {
             temp_user.first_name = json_user.getString("first_name");
             temp_user.last_name = json_user.getString("last_name");
             temp_user.filename = "http://ec2-54-69-64-152.us-west-2.compute.amazonaws.com/whoz_rails/images/" + json_user.getString("filename");
+            temp_user.phone = json_user.getString("phone");
             temp_user.user_id = json_user.getInt("id");
         } catch (JSONException e) {
             Log.v(e.toString(), "JSON ERROR");
@@ -433,37 +423,37 @@ public class MainActivity extends ActionBarActivity {
             }
             super.onPostExecute(result);
         }
-        private ArrayList<User> createUserList(JSONArray users) {
-            ArrayList<User> user_list = new ArrayList<User>();
-            try {
-                for (int i = 0; i < users.length(); i++) {
-                    JSONObject json_user = users.getJSONObject(i);
-                    User user = new User();
-                    user.user_id = json_user.getInt("id");
-                    user.filename = json_user.getString("filename");
-                    user.first_name = json_user.getString("first_name");
-                    user.last_name = json_user.getString("last_name");
-                    user.phone = json_user.getString("phone");
-                    user_list.add(user);
-                }
+    }
+    public static Conversation createConversation(JSONObject json_conversation){
+        Conversation temp_conversation = new Conversation();
+        try {
+            temp_conversation.title = json_conversation.getString("title");
+            temp_conversation.id = json_conversation.getInt("id");
+            temp_conversation.setDate(json_conversation.getString("created_at"));
+            temp_conversation.users = createUserList(new JSONArray(json_conversation.getString("users")));
+        } catch (JSONException e) {
+            Log.v(e.toString(), "JSON ERROR");
+        }
+        return temp_conversation;
+    }
+    public static ArrayList<User> createUserList(JSONArray users) {
+        ArrayList<User> user_list = new ArrayList<User>();
+        try {
+            for (int i = 0; i < users.length(); i++) {
+                JSONObject json_user = users.getJSONObject(i);
+                User user = new User();
+                user.user_id = json_user.getInt("id");
+                user.filename = json_user.getString("filename");
+                user.first_name = json_user.getString("first_name");
+                user.last_name = json_user.getString("last_name");
+                user.phone = json_user.getString("phone");
+                user_list.add(user);
+            }
 
-            } catch (Exception e){
-                Log.e(e.toString(), "EXCEPTION");
-            }
-            return user_list;
+        } catch (Exception e){
+            Log.e(e.toString(), "EXCEPTION");
         }
-        private Conversation createConversation(JSONObject json_conversation){
-            Conversation temp_conversation = new Conversation();
-            try {
-                temp_conversation.title = json_conversation.getString("title");
-                temp_conversation.id = json_conversation.getInt("id");
-                temp_conversation.setDate(json_conversation.getString("created_at"));
-                temp_conversation.users = createUserList(new JSONArray(json_conversation.getString("users")));
-            } catch (JSONException e) {
-                Log.v(e.toString(), "JSON ERROR");
-            }
-            return temp_conversation;
-        }
+        return user_list;
     }
     public static class GetBlockedUsersAPI extends AsyncTask<String, Void, JSONObject> {
         private int status_code;
@@ -572,11 +562,6 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         public void onClick(View v) {
-//                firebase.child("user_id").setValue("5");
-//                firebase = new Firebase("https://radiant-inferno-906.firebaseio.com/conversation/1");
-//                firebase.child("first_maessage").setValue("Setting message.");
-//                GetStreamAPI task = new GetStreamAPI();
-//                task.execute();
             if (v.getId() == R.id.create_message ) {
                 startActivity(new Intent(getActivity(), NewMessages.class));
             }

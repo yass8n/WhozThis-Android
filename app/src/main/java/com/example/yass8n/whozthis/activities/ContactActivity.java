@@ -116,24 +116,11 @@ public class ContactActivity extends ActionBarActivity {
         int id = item.getItemId();
         if (id == R.id.add) {
             if (menu_text.equals("Block")){
-                Iterator<User> it = MainActivity.blocked_people.iterator();
-                User perso;
-                while (it.hasNext()) {
-                    perso = it.next();
-                    Log.v(Integer.toString(perso.user_id), " BLOCKED_USER_ID");
-                }
                 Iterator<User> itr = selected_people.iterator();
                 User person;
                 while (itr.hasNext()) {
                     person = itr.next();
-                    Log.v(Integer.toString(person.user_id), " SELECTED_USER_ID");
                     MainActivity.blocked_people.add(person);
-                }
-                Iterator<User> i = MainActivity.blocked_people.iterator();
-                User pers;
-                while (i.hasNext()) {
-                    pers = i.next();
-                    Log.v(Integer.toString(pers.user_id), " BLOCKED_AFTER_USER_ID");
                 }
                 BlockUsersAPI task = new BlockUsersAPI();
                 task.execute();
@@ -149,7 +136,14 @@ public class ContactActivity extends ActionBarActivity {
                     }
                 }, 1300);
             }else {
-                Toast.makeText(ContactActivity.this, "ADDING", Toast.LENGTH_SHORT).show();
+                Iterator<User> itr = selected_people.iterator();
+                User person;
+                while (itr.hasNext()) {
+                    person = itr.next();
+                    NewMessages.selected_people.add(person);
+                }
+                NewMessages.setProfilePics();
+                finish();
             }
         }
         return super.onOptionsItemSelected(item);
