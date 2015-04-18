@@ -45,7 +45,9 @@ import android.widget.Toast;
 import com.example.yass8n.whozthis.R;
 import com.example.yass8n.whozthis.objects.Conversation;
 import com.example.yass8n.whozthis.objects.Global;
+import com.example.yass8n.whozthis.objects.Message;
 import com.example.yass8n.whozthis.objects.User;
+import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
@@ -73,7 +75,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -90,8 +94,10 @@ public class MainActivity extends ActionBarActivity {
     public static ArrayList<Conversation> conversations_array = new ArrayList<Conversation>();
     public static ArrayList<User> friends_array = new ArrayList<>();
     public static int HEADER_ID = -1;
+    public static Conversation current_conversation = new Conversation();
     public static ArrayList<String> phones = new ArrayList<String>();
     public static ArrayList<User> contacts_in_phone = new ArrayList<>();
+    private HashMap<Integer, ChildEventListener> conversation_chats_set = new HashMap<>();
     //need the conversations array attached to the main activity so we can access it from other activities with "MainActivity.conversations_array"
 
 
@@ -421,6 +427,7 @@ public class MainActivity extends ActionBarActivity {
             } else{
                 Toast.makeText(context, "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
             }
+            setFireBaseChats();
             super.onPostExecute(result);
         }
     }
@@ -626,7 +633,7 @@ public class MainActivity extends ActionBarActivity {
 
                 holder.date.setText(conversation.getDate());
                 holder.title.setText(conversation.title);
-                holder.last_message.setText("Put the last message in here");
+                holder.last_message.setText(conversation.messages.get(conversation.messages.size()-1).comment);
                 final RelativeLayout image = (RelativeLayout) conversation_view.findViewById(R.id.users_modal);
                 ImageView modal_pic = (ImageView) image.findViewById(R.id.modal_pic);
                 if (conversation.users.size() > 2){
@@ -645,7 +652,8 @@ public class MainActivity extends ActionBarActivity {
                 conversation_view.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Toast.makeText(getActivity(), "LEON: This should open up a new activity called 'MessageActivity' that will show all the messages for this conversation", Toast.LENGTH_LONG).show();
+                        current_conversation = conversation;
+                        startActivity(new Intent(getActivity(), MessagingActivity.class));
                     }
                 });
                 ImageView trash = (ImageView) conversation_view.findViewById(R.id.delete);
@@ -918,4 +926,53 @@ public class MainActivity extends ActionBarActivity {
         }
 
     }
+    public void setFireBaseChats() {
+        for (int i = 0;i<conversations_array.size();i++) {
+            final Conversation conversation = conversations_array.get(i);
+
+            Firebase firebase = new Firebase(Global.FBASE_URL + "messages/" + conversation.id);
+
+            if (conversation_chats_set.get(conversation.id) != null) {
+                //if its already set, unset it
+                firebase.removeEventListener(conversation_chats_set.get(conversation.id));
+            }
+            ChildEventListener firebase_listener = new ChildEventListener() {
+                // Retrieve new posts as they are added to Firebase
+                @Override
+                public void onChildAdded(DataSnapshot snapshot, String previousChildKey) {
+                    Map<String, Object> newPost = (Map<String, Object>) snapshot.getValue();
+                    Message message=new Message();
+                    message.comment = newPost.get("comment").toString();
+                    message.timestamp = newPost.get("timestamp").toString();
+                    message.fname = newPost.get("fname").toString();
+                    message.color = newPost.get("color").toString();
+                    message.user_id = newPost.get("user_id").toString();
+                    message.fake_id = newPost.get("fake_id").toString();
+                    conversation.messages.add(message);
+                }
+
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+                }
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+                }
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                }
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
+
+                }
+            };
+
+            // Retrieve new posts as they are added to Firebase
+            firebase.addChildEventListener(firebase_listener);
+            conversation_chats_set.put(conversation.id, firebase_listener);
+        }
+    }
+
 }

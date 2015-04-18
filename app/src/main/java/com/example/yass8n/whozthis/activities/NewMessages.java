@@ -3,7 +3,9 @@ package com.example.yass8n.whozthis.activities;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
@@ -15,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -27,6 +30,7 @@ import android.widget.Toast;
 import com.example.yass8n.whozthis.R;
 import com.example.yass8n.whozthis.objects.Global;
 import com.example.yass8n.whozthis.objects.User;
+import com.firebase.client.Firebase;
 import com.squareup.picasso.Picasso;
 
 import org.apache.http.HttpEntity;
@@ -46,14 +50,17 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 
 public class NewMessages extends ActionBarActivity {
     private TextView title;
-    private EditText text_mess;
+    public static EditText first_text_mess;
     private static LinearLayout whoz_it_to;
     private ImageView plus;
     private static Activity activity;
@@ -91,24 +98,28 @@ public class NewMessages extends ActionBarActivity {
     }
     private void initializeVariables(){
        whoz_it_to = (LinearLayout) findViewById(R.id.profile_pics);
-       text_mess = (EditText) findViewById(R.id.text_mess);
+       first_text_mess = (EditText) findViewById(R.id.text_mess);
        plus = (ImageView) findViewById(R.id.plus);
        title = (TextView) findViewById(R.id.convo_title);
        selected_people = new LinkedHashSet();
     }
 
     public void sendConvo(View view) {
-        if (text_mess.getText().length() == 0){
+        if (first_text_mess.getText().length() == 0){
             Toast.makeText(activity, "You must write something in your message.", Toast.LENGTH_SHORT).show();
         } else if (selected_people.size() == 0){
             Toast.makeText(activity, "Please select someone to send the message to.", Toast.LENGTH_SHORT).show();
         } else {
-            new CreateConversationAPI().execute();
+            hideKeyboard();
+            CreateConversationAPI convAPI = new CreateConversationAPI();
+            convAPI.execute(first_text_mess.getText().toString());
+            first_text_mess.setText("");
         }
     }
 
     public void inviteMore(View view) {
-        startActivity(new Intent(activity, ContactActivity.class));
+        Intent intent = new Intent(activity, ContactActivity.class);
+        startActivity(intent);
     }
     public static void setProfilePics() {
         LayoutInflater inflater = activity.getLayoutInflater();
@@ -133,11 +144,23 @@ public class NewMessages extends ActionBarActivity {
             whoz_it_to.addView(profile_pic_view);
         }
     }
+    public void sendText(View view) {
+
+    }
+    private void hideKeyboard() {
+        // Check if no view has focus:
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        }
+    }
 
     private class CreateConversationAPI extends AsyncTask<String, Void, JSONObject> {
         private int status_code;
         ImageView faded_screen = (ImageView) findViewById(R.id.faded);
         ProgressBar progress_bar = (ProgressBar) findViewById(R.id.progress_bar);
+        String text_message;
         @Override
         protected void onPreExecute() {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
@@ -152,6 +175,7 @@ public class NewMessages extends ActionBarActivity {
             JSONObject jObject = null;
             InputStream inputStream = null;
             String result = null;
+            this.text_message = s[0];
             try {
 
                 HttpClient httpClient = new DefaultHttpClient();
@@ -230,7 +254,7 @@ public class NewMessages extends ActionBarActivity {
                     JSONObject json_conversation = conversations.getJSONObject(0);
                     MainActivity.conversations_array.add(MainActivity.createConversation(json_conversation));
                     MainActivity.PlaceholderFragment.conversatons_adapter.notifyDataSetChanged();
-                    startActivity(new Intent(activity, MainActivity.class));
+                    MainActivity.current_conversation = MainActivity.conversations_array.get(MainActivity.conversations_array.size()-1);
                 } catch (JSONException e) {
                     Log.e(e.toString(), "JSONError");
                 }
@@ -240,6 +264,10 @@ public class NewMessages extends ActionBarActivity {
             faded_screen.setVisibility(View.GONE);
             progress_bar.setVisibility(View.GONE);
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+            Global.SendFireBaseMessage fbaseAPI = new Global.SendFireBaseMessage();
+            fbaseAPI.execute(this.text_message);
+            Intent intent = new Intent(activity, MessagingActivity.class);
+            startActivity(intent);
             super.onPostExecute(result);
         }
     }

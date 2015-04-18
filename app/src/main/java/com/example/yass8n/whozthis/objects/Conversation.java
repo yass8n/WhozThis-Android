@@ -11,6 +11,7 @@ public class Conversation {
     public int owner_id;
     public int id;
     private String date;
+    public ArrayList<Message> messages = new ArrayList();
 
     public void Conversation(){
         this.title = "";

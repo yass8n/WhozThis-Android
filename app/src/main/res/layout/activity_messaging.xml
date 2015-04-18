@@ -17,8 +17,6 @@
             android:id="@+id/event_chat_list"
             android:stackFromBottom="true"
             android:transcriptMode="normal"
-            android:divider="@null"
-            android:dividerHeight="0dp"
             >
 
         </ListView>
@@ -64,6 +62,7 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:id="@+id/send_button"
+                android:onClick="sendText"
                 android:src="@drawable/paper_plane"/>
 
         </LinearLayout>
