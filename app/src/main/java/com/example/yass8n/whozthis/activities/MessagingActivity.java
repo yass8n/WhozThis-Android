@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
@@ -37,11 +38,13 @@ public class MessagingActivity extends ActionBarActivity {
     private static ChatAdapter chat_adapter;
     public static Activity activity;
     private static boolean is_in_front;
+    private static EditText message_view;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_messaging);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         initializeVariables();
     }
 
@@ -72,6 +75,9 @@ public class MessagingActivity extends ActionBarActivity {
     public void onResume() {
         super.onResume();
         is_in_front = true;
+        if (message_view != null){
+            message_view.requestFocus();
+        }
     }
 
     @Override
@@ -88,6 +94,7 @@ public class MessagingActivity extends ActionBarActivity {
 
     private void initializeVariables() {
         activity = this;
+        message_view = (EditText) findViewById(R.id.text_mess);
         chat_adapter = new ChatAdapter();
         ListView messages_list_view = (ListView) findViewById(R.id.event_chat_list);
         messages_list_view.setAdapter(chat_adapter);
