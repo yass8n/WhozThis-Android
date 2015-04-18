@@ -126,6 +126,8 @@
                     android:paddingLeft="5dp"
                     android:paddingTop="5dp"
                     android:paddingBottom="5dp"
+                    android:focusableInTouchMode="true"
+                    android:focusable="true"
                     android:inputType="textMultiLine|textCapSentences"
                     android:capitalize="sentences"
                     android:isScrollContainer="true"

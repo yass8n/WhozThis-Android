@@ -91,6 +91,7 @@ public class MessagingActivity extends ActionBarActivity {
         chat_adapter = new ChatAdapter();
         ListView messages_list_view = (ListView) findViewById(R.id.event_chat_list);
         messages_list_view.setAdapter(chat_adapter);
+        chat_adapter.notifyDataSetChanged();
     }
 
     public void sendText(View view) {

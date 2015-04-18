@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
@@ -63,7 +64,7 @@ public class NewMessages extends ActionBarActivity {
     public static EditText first_text_mess;
     private static LinearLayout whoz_it_to;
     private ImageView plus;
-    private static Activity activity;
+    public static Activity activity;
     public static Set selected_people;
 
     @Override
@@ -71,6 +72,7 @@ public class NewMessages extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         activity = this;
         setContentView(R.layout.activity_new_message);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         initializeVariables();
     }
 
@@ -80,6 +82,13 @@ public class NewMessages extends ActionBarActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_new_messages, menu);
         return true;
+    }
+    @Override
+    protected void onResume(){
+        super.onResume();
+        if (first_text_mess != null) {
+            first_text_mess.requestFocus();
+        }
     }
 
     @Override
@@ -110,7 +119,6 @@ public class NewMessages extends ActionBarActivity {
         } else if (selected_people.size() == 0){
             Toast.makeText(activity, "Please select someone to send the message to.", Toast.LENGTH_SHORT).show();
         } else {
-            hideKeyboard();
             CreateConversationAPI convAPI = new CreateConversationAPI();
             convAPI.execute(first_text_mess.getText().toString());
             first_text_mess.setText("");
@@ -263,20 +271,30 @@ public class NewMessages extends ActionBarActivity {
                     MainActivity.conversations_array.add(MainActivity.createConversation(json_conversation));
                     MainActivity.conversatons_adapter.notifyDataSetChanged();
                     MainActivity.current_conversation = MainActivity.conversations_array.get(MainActivity.conversations_array.size()-1);
+                    MainActivity.setFireBaseChats();
                 } catch (JSONException e) {
                     Log.e(e.toString(), "JSONError");
                 }
             } else{
                 Toast.makeText(activity, "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
             }
-            faded_screen.setVisibility(View.GONE);
-            progress_bar.setVisibility(View.GONE);
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
             Global.SendFireBaseMessage fbaseAPI = new Global.SendFireBaseMessage();
             fbaseAPI.execute(this.text_message);
-            Intent intent = new Intent(activity, MessagingActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable()
+            {
+                @Override
+                public void run() {
+
+                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                    Intent intent = new Intent(activity, MessagingActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    faded_screen.setVisibility(View.GONE);
+                    progress_bar.setVisibility(View.GONE);
+                    startActivity(intent);
+                    finish();
+                }
+            }, 100 );
             super.onPostExecute(result);
         }
     }

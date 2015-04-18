@@ -97,7 +97,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     public static Conversation current_conversation = new Conversation();
     public static ArrayList<String> phones = new ArrayList<String>();
     public static ArrayList<User> contacts_in_phone = new ArrayList<>();
-    private HashMap<Integer, ChildEventListener> conversation_chats_set = new HashMap<>();
+    private static HashMap<Integer, ChildEventListener> conversation_chats_set = new HashMap<>();
     public static ListView conversations_list;
     public static ConversationsAdapter conversatons_adapter;
     private SwipeRefreshLayout refreshLayout;
@@ -200,6 +200,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         protected String doInBackground(Void... v)  {
             try {
                 // Run query
+                contacts_in_phone.clear();
                 ContentResolver cr = context.getContentResolver();
                 Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, ContactsContract.Contacts.DISPLAY_NAME + " ASC");
                 if (cur.getCount() > 0) {
@@ -737,7 +738,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 if (al!=null) {
                     anim.setAnimationListener(al);
                 }
-                anim.setDuration(600);
+                anim.setDuration(200);
                 convo.startAnimation(anim);
             }
             private class DeleteApi extends AsyncTask<ArrayList<Object>, Void, JSONObject> {
@@ -933,7 +934,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
         }
 
-    public void setFireBaseChats() {
+    public static void setFireBaseChats() {
         for (int i = 0;i<conversations_array.size();i++) {
             final Conversation conversation = conversations_array.get(i);
 
@@ -943,6 +944,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 //if its already set, unset it
                 firebase.removeEventListener(conversation_chats_set.get(conversation.id));
             }
+            conversation.messages.clear();
             ChildEventListener firebase_listener = new ChildEventListener() {
                 // Retrieve new posts as they are added to Firebase
                 @Override
