@@ -48,24 +48,23 @@ public class MessagingActivity extends ActionBarActivity {
         initializeVariables();
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_messaging, menu);
+        getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (id == R.id.sign_out) {
+            getSharedPreferences("user", Context.MODE_PRIVATE).edit().clear().commit();
+            startActivity(new Intent(MessagingActivity.this, WelcomeActivity.class));
+        } else if (id == R.id.edit_profile){
+            startActivity(new Intent(MessagingActivity.this, ProfileActivity.class));
         }
 
         return super.onOptionsItemSelected(item);
@@ -115,6 +114,7 @@ public class MessagingActivity extends ActionBarActivity {
             TextView eventListTextMessage;
             ImageView event_list_text_image;
             TextView event_list_time;
+            TextView number;
         }
 
         @Override
@@ -145,6 +145,7 @@ public class MessagingActivity extends ActionBarActivity {
                 viewHolder.eventListTextMessage = (TextView) chat.findViewById(R.id.event_list_text_message);
                 viewHolder.event_list_text_image = (ImageView) chat.findViewById(R.id.event_list_text_image);
                 viewHolder.event_list_time = (TextView) chat.findViewById(R.id.event_list_time);
+                viewHolder.number = (TextView) chat.findViewById(R.id.number);
                 chat.setTag(viewHolder);
             }
 
@@ -156,6 +157,8 @@ public class MessagingActivity extends ActionBarActivity {
             String chat_time = convertChatDate(message.timestamp);
 
             holder.event_list_time.setText(chat_time);
+
+            holder.number.setText(message.fake_id);
 
             holder.event_list_text_image.setImageResource(Global.colorsMap.get(message.color));
 

@@ -77,12 +77,7 @@ public class NewMessages extends ActionBarActivity {
     }
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_new_messages, menu);
-        return true;
-    }
+
     @Override
     protected void onResume(){
         super.onResume();
@@ -90,17 +85,23 @@ public class NewMessages extends ActionBarActivity {
             first_text_mess.requestFocus();
         }
     }
-
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (id == R.id.sign_out) {
+            getSharedPreferences("user", Context.MODE_PRIVATE).edit().clear().commit();
+            startActivity(new Intent(NewMessages.this, WelcomeActivity.class));
+        } else if (id == R.id.edit_profile){
+            startActivity(new Intent(NewMessages.this, ProfileActivity.class));
         }
 
         return super.onOptionsItemSelected(item);
@@ -131,6 +132,7 @@ public class NewMessages extends ActionBarActivity {
     }
     public static void setProfilePics() {
         LayoutInflater inflater = activity.getLayoutInflater();
+        whoz_it_to.removeAllViews();
         Iterator<User> itr = selected_people.iterator();
         User person;
         while (itr.hasNext()) {
@@ -264,6 +266,8 @@ public class NewMessages extends ActionBarActivity {
 
         @Override
         protected void onPostExecute(JSONObject result) {
+            Global.log(result.toString(), " <<<<<<<<<");
+
             if (status_code == 200) {
                 try {
                     JSONArray conversations = new JSONArray(result.getString("conversations"));
@@ -272,29 +276,29 @@ public class NewMessages extends ActionBarActivity {
                     MainActivity.conversatons_adapter.notifyDataSetChanged();
                     MainActivity.current_conversation = MainActivity.conversations_array.get(MainActivity.conversations_array.size()-1);
                     MainActivity.setFireBaseChats();
+                    Global.SendFireBaseMessage fbaseAPI = new Global.SendFireBaseMessage();
+                    fbaseAPI.execute(this.text_message);
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable()
+                    {
+                        @Override
+                        public void run() {
+
+                            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                            Intent intent = new Intent(activity, MessagingActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                            finish();
+                        }
+                    }, 200 );
                 } catch (JSONException e) {
                     Log.e(e.toString(), "JSONError");
                 }
             } else{
                 Toast.makeText(activity, "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
             }
-            Global.SendFireBaseMessage fbaseAPI = new Global.SendFireBaseMessage();
-            fbaseAPI.execute(this.text_message);
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable()
-            {
-                @Override
-                public void run() {
-
-                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-                    Intent intent = new Intent(activity, MessagingActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    faded_screen.setVisibility(View.GONE);
-                    progress_bar.setVisibility(View.GONE);
-                    startActivity(intent);
-                    finish();
-                }
-            }, 100 );
+            faded_screen.setVisibility(View.GONE);
+            progress_bar.setVisibility(View.GONE);
             super.onPostExecute(result);
         }
     }

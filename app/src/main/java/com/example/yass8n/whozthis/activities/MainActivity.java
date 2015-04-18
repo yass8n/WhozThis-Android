@@ -132,11 +132,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     @Override
     public void onBackPressed(){
         //override back button when main activity fragment is showing
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag("MAIN");
-        if (fragment.isVisible()) {
-        } else {
             super.onBackPressed();
-        }
     }
 
 
@@ -449,6 +445,12 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                         conversations_array.add(createConversation(json_conversation));
                     }
                     setFireBaseChats();
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            conversatons_adapter.notifyDataSetChanged();
+                        }
+                    }, 1000);
                 } catch (JSONException e) {
                     Log.e(e.toString(), "JSONError");
                 }
@@ -480,6 +482,8 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 user.filename = json_user.getString("filename");
                 user.first_name = json_user.getString("first_name");
                 user.last_name = json_user.getString("last_name");
+                user.fake_id = json_user.getInt("fake_id");
+                user.convo_color = json_user.getString("color");
                 user.phone = json_user.getString("phone");
                 user_list.add(user);
             }
@@ -949,16 +953,17 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 // Retrieve new posts as they are added to Firebase
                 @Override
                 public void onChildAdded(DataSnapshot snapshot, String previousChildKey) {
-                    Map<String, Object> newPost = (Map<String, Object>) snapshot.getValue();
-                    Message message=new Message();
-                    message.comment = newPost.get("comment").toString();
-                    message.timestamp = newPost.get("timestamp").toString();
-                    message.fname = newPost.get("fname").toString();
-                    message.color = newPost.get("color").toString();
-                    message.user_id = newPost.get("user_id").toString();
-                    message.fake_id = newPost.get("fake_id").toString();
-                    conversation.messages.add(message);
-                    conversatons_adapter.notifyDataSetChanged();
+                        Map<String, Object> newPost = (Map<String, Object>) snapshot.getValue();
+                        Message message = new Message();
+                        message.comment = newPost.get("comment").toString();
+                        message.timestamp = newPost.get("timestamp").toString();
+                        message.fname = newPost.get("fname").toString();
+                        message.user_id = newPost.get("user_id").toString();
+                        message.fake_id = newPost.get("fake_id").toString();
+                        message.color = newPost.get("color").toString();
+                        conversation.messages.add(message);
+                        conversatons_adapter.notifyDataSetChanged();
+
                 }
 
                 @Override

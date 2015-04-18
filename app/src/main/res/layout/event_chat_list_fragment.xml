@@ -25,11 +25,12 @@
             android:layout_height="35dp"
             android:id="@+id/event_list_text_image"
             android:layout_gravity="center"
-            android:layout_centerVertical="true"
             android:layout_marginLeft="3dp"
             android:layout_marginStart="3dp"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
+            android:layout_centerVertical="true"
+            android:layout_centerInParent="true"
             android:src="@color/app_green"
             android:scaleType="centerCrop"
             app:riv_oval="true"
@@ -37,7 +38,9 @@
         <TextView
             android:layout_centerHorizontal="true"
             android:id="@+id/number"
+            android:textColor="@color/white"
             android:layout_centerVertical="true"
+            android:layout_centerInParent="true"
             android:gravity="center"
             android:layout_width="35dp"
             android:layout_height="35dp" />
@@ -54,6 +57,7 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
+
 
             <TextView
                 android:layout_width="wrap_content"

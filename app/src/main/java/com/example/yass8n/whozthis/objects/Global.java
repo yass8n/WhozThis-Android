@@ -114,6 +114,7 @@ public class Global extends Application {
             editor.putString("last", last);
             editor.putString("phone", phone);
             editor.putString("filename", filename);
+
             editor.commit();
         } catch (Exception e) {
             Log.e(e.toString(), " Exception in Global ");
@@ -134,14 +135,20 @@ public class Global extends Application {
             Calendar calendar = Calendar.getInstance();
             java.util.Date now = calendar.getTime();
             long unixTime = System.currentTimeMillis() / 1000L;
+            int i = 0;
+            while(i < MainActivity.current_conversation.users.size()){
+                if (WelcomeActivity.current_user.user_id == MainActivity.current_conversation.users.get(i).user_id)
+                    break;
+                i++;
+            }
 
             post.put("user_id", Integer.toString(WelcomeActivity.current_user.user_id));
             post.put("fname", WelcomeActivity.current_user.first_name);
             post.put("lname", WelcomeActivity.current_user.last_name);
             post.put("timestamp", String.valueOf(unixTime));
-            post.put("color", Global.hex_array[0]);
+            post.put("color", MainActivity.current_conversation.users.get(i).convo_color);
+            post.put("fake_id", Integer.toString(MainActivity.current_conversation.users.get(i).fake_id));
             post.put("title", MainActivity.current_conversation.title);
-            post.put("fake_id", "2");
             post.put("comment", user_comment);
 
             Firebase firebase = new Firebase(Global.FBASE_URL + "messages/" + MainActivity.current_conversation.id);

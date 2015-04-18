@@ -22,6 +22,8 @@ public class User {
     public int index;
     public int color;
     public boolean checked;
+    public int fake_id;
+    public String convo_color;
 
     public void User(){
         this.phone = "";
@@ -33,6 +35,8 @@ public class User {
         this.index = 0;
         this.checked = false;
         this.color = 0;
+        this.fake_id = 0;
+        this.convo_color = "";
     }
     public void User(String phone, String first_name, String last_name, String filename, int user_id){
         this.phone = stripPhone(phone);

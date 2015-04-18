@@ -130,7 +130,7 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
         }
     }
     public void setAllFields(){
-        p_num = phone.getText().toString();
+        p_num = phone.getText().toString().replaceAll("\\s+","");
         f_name = first_name.getText().toString();
         l_name = last_name.getText().toString();
         p_word = password.getText().toString();

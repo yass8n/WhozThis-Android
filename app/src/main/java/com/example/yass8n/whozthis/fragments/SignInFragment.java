@@ -91,7 +91,7 @@ public class SignInFragment extends Fragment implements View.OnClickListener {
         }
     }
     public void setAllFields(){
-        p_num = phone.getText().toString();
+        p_num = phone.getText().toString().replaceAll("\\s+","");
         p_word = password.getText().toString();
     }
 
@@ -180,6 +180,7 @@ public class SignInFragment extends Fragment implements View.OnClickListener {
         @Override
         protected void onPostExecute(JSONObject result) {
             if (status_code == 200) {
+                Log.v("here sign in ", " <<<<<<<");
                     Global.saveUserToPhone(result, getActivity());
                     getActivity().startActivity(new Intent(getActivity(), MainActivity.class));
                     super.onPostExecute(result);
