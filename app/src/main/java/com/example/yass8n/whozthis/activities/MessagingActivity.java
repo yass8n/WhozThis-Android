@@ -34,8 +34,10 @@ import java.util.Date;
 import java.util.Map;
 
 public class MessagingActivity extends ActionBarActivity {
-    private ChatAdapter chat_adapter;
+    private static ChatAdapter chat_adapter;
     public static Activity activity;
+    private static boolean is_in_front;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,12 +67,30 @@ public class MessagingActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
-    private void initializeVariables(){
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        is_in_front = true;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        is_in_front = false;
+    }
+
+    public static void notifyAdapter() {
+        if (is_in_front) {
+            chat_adapter.notifyDataSetChanged();
+        }
+    }
+
+    private void initializeVariables() {
         activity = this;
         chat_adapter = new ChatAdapter();
         ListView messages_list_view = (ListView) findViewById(R.id.event_chat_list);
         messages_list_view.setAdapter(chat_adapter);
-        setFireBaseChats();
     }
 
     public void sendText(View view) {
@@ -79,123 +99,83 @@ public class MessagingActivity extends ActionBarActivity {
         fbaseAPI.execute(text_message.getText().toString());
         text_message.setText("");
     }
-    public void setFireBaseChats() {
-        Firebase firebase = new Firebase(Global.FBASE_URL + "messages/" + MainActivity.current_conversation.id);
-
-        ChildEventListener firebase_listener = new ChildEventListener() {
-            // Retrieve new posts as they are added to Firebase
-            @Override
-            public void onChildAdded(DataSnapshot snapshot, String previousChildKey) {
-                Map<String, Object> newPost = (Map<String, Object>) snapshot.getValue();
-                Message message=new Message();
-                message.comment = newPost.get("comment").toString();
-                message.timestamp = newPost.get("timestamp").toString();
-                message.fname = newPost.get("fname").toString();
-                message.color = newPost.get("color").toString();
-                message.user_id = newPost.get("user_id").toString();
-                message.fake_id = newPost.get("fake_id").toString();
-                MainActivity.current_conversation.messages.add(message);
-                chat_adapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-
-            }
-        };
-        // Retrieve new posts as they are added to Firebase
-        firebase.addChildEventListener(firebase_listener);
-    }
-}
-class ChatAdapter extends BaseAdapter {
-    ChatAdapter() {}
-
-    class ChatViewHolder {
-        TextView eventListTextName;
-        TextView eventListTextMessage;
-        ImageView event_list_text_image;
-        TextView event_list_time;
-    }
-
-    @Override
-    public int getCount() {
-        return MainActivity.current_conversation.messages.size();
-    }
-
-    @Override
-    public Object getItem(int position) {
-        return MainActivity.current_conversation.messages.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return position;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        View chat = convertView;
-        // inject views
-        if (chat == null) {
-            LayoutInflater inflater = MessagingActivity.activity.getLayoutInflater();
-            chat = inflater.inflate(R.layout.event_chat_list_fragment, parent, false);
-            ChatViewHolder viewHolder = new ChatViewHolder();
-
-            // setting correct data
-            viewHolder.eventListTextName = (TextView) chat.findViewById(R.id.event_list_text_name);
-            viewHolder.eventListTextMessage = (TextView) chat.findViewById(R.id.event_list_text_message);
-            viewHolder.event_list_text_image = (ImageView) chat.findViewById(R.id.event_list_text_image);
-            viewHolder.event_list_time = (TextView) chat.findViewById(R.id.event_list_time);
-            chat.setTag(viewHolder);
+    class ChatAdapter extends BaseAdapter {
+        ChatAdapter() {
         }
 
-        ChatViewHolder holder = (ChatViewHolder) chat.getTag();
-        Message message = MainActivity.current_conversation.messages.get(position);
+        class ChatViewHolder {
+            TextView eventListTextMessage;
+            ImageView event_list_text_image;
+            TextView event_list_time;
+        }
 
-        holder.eventListTextMessage.setText(message.comment);
-        holder.eventListTextName.setText(message.fname);
+        @Override
+        public int getCount() {
+            return MainActivity.current_conversation.messages.size();
+        }
 
-        String chat_time = convertChatDate(message.timestamp);
+        @Override
+        public Object getItem(int position) {
+            return MainActivity.current_conversation.messages.get(position);
+        }
 
-        holder.event_list_time.setText(chat_time);
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
 
-        holder.event_list_text_image.setImageResource(Global.colorsMap.get(message.color));
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View chat = convertView;
+            // inject views
+            if (chat == null) {
+                LayoutInflater inflater = MessagingActivity.activity.getLayoutInflater();
+                chat = inflater.inflate(R.layout.event_chat_list_fragment, parent, false);
+                ChatViewHolder viewHolder = new ChatViewHolder();
 
-        return chat;
-    }
-    private String convertChatDate(String timestamp) {
-
-        // Remove the try catch after all old chats are gone
-        try {
-            Date date = new Date((long) Integer.parseInt(timestamp) * 1000);
-            Date today = new Date();
-            SimpleDateFormat compare_df = new SimpleDateFormat("M/d/yy");
-            Date date_compare = new Date(compare_df.format(date));
-            today = new Date(compare_df.format(today));
-
-            if (today.equals(date_compare)) {
-                SimpleDateFormat today_df = new SimpleDateFormat("h:mm a");
-                return today_df.format(date);
-            } else {
-                SimpleDateFormat df = new SimpleDateFormat("h:mm a M/d/yy");
-                return df.format(date);
+                // setting correct data
+                viewHolder.eventListTextMessage = (TextView) chat.findViewById(R.id.event_list_text_message);
+                viewHolder.event_list_text_image = (ImageView) chat.findViewById(R.id.event_list_text_image);
+                viewHolder.event_list_time = (TextView) chat.findViewById(R.id.event_list_time);
+                chat.setTag(viewHolder);
             }
 
-        } catch(Exception e) {
-            Log.v(e.toString(), "Error");
-            return timestamp;
+            ChatViewHolder holder = (ChatViewHolder) chat.getTag();
+            Message message = MainActivity.current_conversation.messages.get(position);
+
+            holder.eventListTextMessage.setText(message.comment);
+
+            String chat_time = convertChatDate(message.timestamp);
+
+            holder.event_list_time.setText(chat_time);
+
+            holder.event_list_text_image.setImageResource(Global.colorsMap.get(message.color));
+
+            return chat;
+        }
+
+        private String convertChatDate(String timestamp) {
+
+            // Remove the try catch after all old chats are gone
+            try {
+                Date date = new Date((long) Integer.parseInt(timestamp) * 1000);
+                Date today = new Date();
+                SimpleDateFormat compare_df = new SimpleDateFormat("M/d/yy");
+                Date date_compare = new Date(compare_df.format(date));
+                today = new Date(compare_df.format(today));
+
+                if (today.equals(date_compare)) {
+                    SimpleDateFormat today_df = new SimpleDateFormat("h:mm a");
+                    return today_df.format(date);
+                } else {
+                    SimpleDateFormat df = new SimpleDateFormat("h:mm a M/d/yy");
+                    return df.format(date);
+                }
+
+            } catch (Exception e) {
+                Log.v(e.toString(), "Error");
+                return timestamp;
+            }
         }
     }
 }

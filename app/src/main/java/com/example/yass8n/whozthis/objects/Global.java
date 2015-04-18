@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.example.yass8n.whozthis.R;
 import com.example.yass8n.whozthis.activities.MainActivity;
+import com.example.yass8n.whozthis.activities.MessagingActivity;
 import com.example.yass8n.whozthis.activities.WelcomeActivity;
 import com.firebase.client.Firebase;
 
@@ -150,6 +151,8 @@ public class Global extends Application {
 
         @Override
         public void onPostExecute(String result) {
+            MessagingActivity.notifyAdapter();
+            MainActivity.notifyAdapter();
         }
     }
 }

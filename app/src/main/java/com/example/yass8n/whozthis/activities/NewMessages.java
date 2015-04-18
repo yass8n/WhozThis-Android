@@ -155,7 +155,15 @@ public class NewMessages extends ActionBarActivity {
             inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
     }
+    private void setRandomness() {
+        Map<String, String> post = new HashMap<>();
+        Calendar calendar = Calendar.getInstance();
+        java.util.Date now = calendar.getTime();
+        long unixTime = System.currentTimeMillis() / 1000L;
 
+        Firebase firebase = new Firebase(Global.FBASE_URL + "messages/randomvalues" + MainActivity.current_conversation.id);
+        firebase.push().setValue(post);
+    }
     private class CreateConversationAPI extends AsyncTask<String, Void, JSONObject> {
         private int status_code;
         ImageView faded_screen = (ImageView) findViewById(R.id.faded);
@@ -253,7 +261,7 @@ public class NewMessages extends ActionBarActivity {
                     JSONArray conversations = new JSONArray(result.getString("conversations"));
                     JSONObject json_conversation = conversations.getJSONObject(0);
                     MainActivity.conversations_array.add(MainActivity.createConversation(json_conversation));
-                    MainActivity.PlaceholderFragment.conversatons_adapter.notifyDataSetChanged();
+                    MainActivity.conversatons_adapter.notifyDataSetChanged();
                     MainActivity.current_conversation = MainActivity.conversations_array.get(MainActivity.conversations_array.size()-1);
                 } catch (JSONException e) {
                     Log.e(e.toString(), "JSONError");
@@ -267,9 +275,11 @@ public class NewMessages extends ActionBarActivity {
             Global.SendFireBaseMessage fbaseAPI = new Global.SendFireBaseMessage();
             fbaseAPI.execute(this.text_message);
             Intent intent = new Intent(activity, MessagingActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
             super.onPostExecute(result);
         }
     }
+
 }
 

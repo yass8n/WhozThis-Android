@@ -87,7 +87,7 @@ import org.apache.http.entity.mime.content.StringBody;
 import android.support.v4.widget.SwipeRefreshLayout;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements View.OnClickListener, SwipeRefreshLayout.OnRefreshListener {
     public static Firebase firebase;
     public static Context context;
     public static Set blocked_people = new LinkedHashSet();
@@ -98,6 +98,23 @@ public class MainActivity extends ActionBarActivity {
     public static ArrayList<String> phones = new ArrayList<String>();
     public static ArrayList<User> contacts_in_phone = new ArrayList<>();
     private HashMap<Integer, ChildEventListener> conversation_chats_set = new HashMap<>();
+    public static ListView conversations_list;
+    public static ConversationsAdapter conversatons_adapter;
+    private SwipeRefreshLayout refreshLayout;
+    private static boolean is_in_front;
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        is_in_front = true;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        is_in_front = false;
+    }
+
     //need the conversations array attached to the main activity so we can access it from other activities with "MainActivity.conversations_array"
 
 
@@ -105,16 +122,12 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         //https://radiant-inferno-906.firebaseio.com   this is the URL where our data will be stored
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         context = this;
         Firebase.setAndroidContext(this);
         firebase = new Firebase("https://radiant-inferno-906.firebaseio.com/");
-        setContentView(R.layout.activity_holder);
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment(), "MAIN")
-                    .commit();
-        }
+        initializeVariables();
     }
     @Override
     public void onBackPressed(){
@@ -158,6 +171,20 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+    public static void notifyAdapter() {
+        if (is_in_front) {
+            conversatons_adapter.notifyDataSetChanged();
+        }
+    }
+    public void initializeVariables() {
+        RelativeLayout create_message = (RelativeLayout) findViewById(R.id.create_message);
+        create_message.setOnClickListener(MainActivity.this);
+        refreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
+        refreshLayout.setOnRefreshListener(this);
+        conversatons_adapter = new ConversationsAdapter();
+        conversations_list = (ListView) findViewById(R.id.conversations_scroll);
+        conversations_list.setAdapter(conversatons_adapter);
     }
     public void loadContacts(){
 //            if (loaded_info == false) {
@@ -419,15 +446,14 @@ public class MainActivity extends ActionBarActivity {
                     for (int i = 0; i < conversations.length(); i++) {
                         JSONObject json_conversation = conversations.getJSONObject(i);
                         conversations_array.add(createConversation(json_conversation));
-                        PlaceholderFragment.conversatons_adapter.notifyDataSetChanged();
                     }
+                    setFireBaseChats();
                 } catch (JSONException e) {
                     Log.e(e.toString(), "JSONError");
                 }
             } else{
                 Toast.makeText(context, "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
             }
-            setFireBaseChats();
             super.onPostExecute(result);
         }
     }
@@ -543,41 +569,19 @@ public class MainActivity extends ActionBarActivity {
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment implements View.OnClickListener, SwipeRefreshLayout.OnRefreshListener {
-        public ListView conversations_list;
-        public static ConversationsAdapter conversatons_adapter;
-        private SwipeRefreshLayout refreshLayout;
 
 
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            conversatons_adapter = new ConversationsAdapter();
-            RelativeLayout create_message = (RelativeLayout) rootView.findViewById(R.id.create_message);
-            create_message.setOnClickListener(this);
-            refreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
-            refreshLayout.setOnRefreshListener(this);
-            conversations_list = (ListView) rootView.findViewById(R.id.conversations_scroll);
-            conversations_list.setAdapter(conversatons_adapter);
-            conversations_list.requestLayout();
-            return rootView;
-        }
 
         @Override
         public void onClick(View v) {
             if (v.getId() == R.id.create_message ) {
-                startActivity(new Intent(getActivity(), NewMessages.class));
+                startActivity(new Intent(this, NewMessages.class));
             }
         }
 
         // on refresh of page by pull down
         @Override public void onRefresh() {
-            MainActivity activity = (MainActivity) getActivity();
-            activity.refreshConversations();
+            this.refreshConversations();
 
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -619,7 +623,7 @@ public class MainActivity extends ActionBarActivity {
                 View conversation_view = convertView;
 
                 if (conversation_view == null) {
-                    LayoutInflater inflater = getActivity().getLayoutInflater();
+                    LayoutInflater inflater = MainActivity.this.getLayoutInflater();
                     ConversationViewHolder view_holder = new ConversationViewHolder();
                     conversation_view = inflater.inflate(R.layout.conversation_fragment, parent, false);
                     view_holder.date = (TextView) conversation_view.findViewById(R.id.date);
@@ -633,7 +637,11 @@ public class MainActivity extends ActionBarActivity {
 
                 holder.date.setText(conversation.getDate());
                 holder.title.setText(conversation.title);
-                holder.last_message.setText(conversation.messages.get(conversation.messages.size()-1).comment);
+                try {
+                    holder.last_message.setText(conversation.messages.get(conversation.messages.size() - 1).comment);
+                }catch(Exception e){
+                    holder.last_message.setText("");
+                }
                 final RelativeLayout image = (RelativeLayout) conversation_view.findViewById(R.id.users_modal);
                 ImageView modal_pic = (ImageView) image.findViewById(R.id.modal_pic);
                 if (conversation.users.size() > 2){
@@ -653,7 +661,7 @@ public class MainActivity extends ActionBarActivity {
                     @Override
                     public void onClick(View v) {
                         current_conversation = conversation;
-                        startActivity(new Intent(getActivity(), MessagingActivity.class));
+                        startActivity(new Intent(MainActivity.this, MessagingActivity.class));
                     }
                 });
                 ImageView trash = (ImageView) conversation_view.findViewById(R.id.delete);
@@ -662,7 +670,7 @@ public class MainActivity extends ActionBarActivity {
                 trash.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(final View v) {
-                        new AlertDialog.Builder(getActivity())
+                        new AlertDialog.Builder(MainActivity.this)
                                 .setIcon(android.R.drawable.ic_dialog_alert)
                                 .setTitle("Delete Conversation")
                                 .setMessage("Are you sure you want to delete this conversation?")
@@ -808,7 +816,7 @@ public class MainActivity extends ActionBarActivity {
                         super.onPostExecute(result);
                     }
                     else {
-                        Toast.makeText(getActivity(), "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
                     }
                 }
             }
@@ -822,7 +830,7 @@ public class MainActivity extends ActionBarActivity {
 
             @Override
             protected void onPreExecute() {
-                builderSingle = new AlertDialog.Builder(getActivity(), R.style.DialogSlideAnim);
+                builderSingle = new AlertDialog.Builder(MainActivity.this, R.style.DialogSlideAnim);
                 user_height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40, getResources().getDisplayMetrics());
             }
 
@@ -849,7 +857,7 @@ public class MainActivity extends ActionBarActivity {
                     public void onClick(DialogInterface dialog, int which) {
                     }
                 });
-                Display display = getActivity().getWindowManager().getDefaultDisplay();
+                Display display = MainActivity.this.getWindowManager().getDefaultDisplay();
                 Point size = new Point();
                 display.getSize(size);
                 double window_width = (double) size.x;
@@ -871,7 +879,7 @@ public class MainActivity extends ActionBarActivity {
             ArrayList<User> user_array = new ArrayList<>();
 
             UsersAdapter(ArrayList<User> user_array) {
-                this.inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                this.inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 this.user_array = (ArrayList<User>) user_array.clone();
             }
 
@@ -904,16 +912,16 @@ public class MainActivity extends ActionBarActivity {
                     textView.setText("People in the conversation");
                     return view;
                 } else {
-                    LayoutInflater inflater = getActivity().getLayoutInflater();
+                    LayoutInflater inflater = MainActivity.this.getLayoutInflater();
                     View view = inflater.inflate(R.layout.users_list_fragment, parent, false);
                     TextView first_name = (TextView) view.findViewById(R.id.full_name);
                     User user = this.user_array.get(position);
                     ImageView image = (ImageView) view.findViewById(R.id.display_pic);
                     first_name.setText(user.first_name + " " + user.last_name);
                     if (!Global.empty(user.filename)) {
-                        Picasso.with(getActivity())
+                        Picasso.with(MainActivity.this)
                                 .cancelRequest(image);
-                        Picasso.with(getActivity())
+                        Picasso.with(MainActivity.this)
                                 .load(user.filename)
                                 .into(image);
                     } else {
@@ -925,7 +933,6 @@ public class MainActivity extends ActionBarActivity {
 
         }
 
-    }
     public void setFireBaseChats() {
         for (int i = 0;i<conversations_array.size();i++) {
             final Conversation conversation = conversations_array.get(i);
@@ -949,6 +956,7 @@ public class MainActivity extends ActionBarActivity {
                     message.user_id = newPost.get("user_id").toString();
                     message.fake_id = newPost.get("fake_id").toString();
                     conversation.messages.add(message);
+                    conversatons_adapter.notifyDataSetChanged();
                 }
 
                 @Override
