@@ -972,12 +972,6 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             final Conversation conversation = conversations_array.get(i);
 
             final Firebase firebase = new Firebase(Global.FBASE_URL + "messages/" + conversation.id);
-
-//            if (conversation_chats_set.get(conversation.id) != null) {
-//                //if its already set, unset it
-//                firebase.removeEventListener(conversation_chats_set.get(conversation.id));
-//            }
-//            conversation.messages.clear();
             Query queryRef = firebase.limitToLast(1);
             queryRef.addChildEventListener(new ChildEventListener() {
                 // Retrieve new posts as they are added to Firebase
@@ -993,6 +987,8 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                         message.color = newPost.get("color").toString();
                         conversation.last_message = message;
                         notifyAdapter();
+                        //LEON: HERE IS WHERE THE WE KNOW THE USER RECEIVED A NEW
+                        // MESSAGE AND NOW WE NEED A NOTIFICATION
                 }
 
                 @Override
