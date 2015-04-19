@@ -345,7 +345,7 @@ public class ContactActivity extends ActionBarActivity {
             }
             else {
                 //this is a friend without a picture uploaded
-                chosen_display_pic.setImageResource(R.drawable.single_pic);
+                chosen_display_pic.setImageResource(R.drawable.single_icon);
             }
         } else { //no one invited anymore
             Animation slide_out_bottom = AnimationUtils.loadAnimation(getApplicationContext(),
@@ -482,7 +482,7 @@ public class ContactActivity extends ActionBarActivity {
             }
             else {
                 //this is a friend without a picture uploaded
-                holder.image.setImageResource(R.drawable.single_pic);
+                holder.image.setImageResource(R.drawable.single_icon);
             }
             return view;
         }

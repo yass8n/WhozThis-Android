@@ -11,6 +11,7 @@ public class Conversation {
     public int owner_id;
     public int id;
     private String date;
+    public Message last_message;
     public ArrayList<Message> messages = new ArrayList();
 
     public void Conversation(){

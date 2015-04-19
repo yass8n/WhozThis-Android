@@ -28,7 +28,7 @@
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:id="@+id/modal_pic"
-            android:src="@drawable/single_pic"
+            android:src="@drawable/single_icon"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
             app:riv_oval="true"

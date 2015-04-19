@@ -99,7 +99,9 @@ public class NewMessages extends ActionBarActivity {
         int id = item.getItemId();
         if (id == R.id.sign_out) {
             getSharedPreferences("user", Context.MODE_PRIVATE).edit().clear().commit();
-            startActivity(new Intent(NewMessages.this, WelcomeActivity.class));
+            Intent intent = new Intent(NewMessages.this, WelcomeActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
         } else if (id == R.id.edit_profile){
             startActivity(new Intent(NewMessages.this, ProfileActivity.class));
         }
@@ -149,13 +151,10 @@ public class NewMessages extends ActionBarActivity {
                         .load(person.filename)
                         .into(profile_pic);
             } else {
-                profile_pic.setImageResource(R.drawable.single_pic);
+                profile_pic.setImageResource(R.drawable.single_icon);
             }
             whoz_it_to.addView(profile_pic_view);
         }
-    }
-    public void sendText(View view) {
-
     }
     private void hideKeyboard() {
         // Check if no view has focus:
@@ -164,15 +163,6 @@ public class NewMessages extends ActionBarActivity {
             InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
             inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
-    }
-    private void setRandomness() {
-        Map<String, String> post = new HashMap<>();
-        Calendar calendar = Calendar.getInstance();
-        java.util.Date now = calendar.getTime();
-        long unixTime = System.currentTimeMillis() / 1000L;
-
-        Firebase firebase = new Firebase(Global.FBASE_URL + "messages/randomvalues" + MainActivity.current_conversation.id);
-        firebase.push().setValue(post);
     }
     private class CreateConversationAPI extends AsyncTask<String, Void, JSONObject> {
         private int status_code;
@@ -273,9 +263,7 @@ public class NewMessages extends ActionBarActivity {
                     JSONArray conversations = new JSONArray(result.getString("conversations"));
                     JSONObject json_conversation = conversations.getJSONObject(0);
                     MainActivity.conversations_array.add(MainActivity.createConversation(json_conversation));
-                    MainActivity.conversatons_adapter.notifyDataSetChanged();
                     MainActivity.current_conversation = MainActivity.conversations_array.get(MainActivity.conversations_array.size()-1);
-                    MainActivity.setFireBaseChats();
                     Global.SendFireBaseMessage fbaseAPI = new Global.SendFireBaseMessage();
                     fbaseAPI.execute(this.text_message);
                     Handler handler = new Handler();

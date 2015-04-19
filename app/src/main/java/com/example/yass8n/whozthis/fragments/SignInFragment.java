@@ -180,10 +180,10 @@ public class SignInFragment extends Fragment implements View.OnClickListener {
         @Override
         protected void onPostExecute(JSONObject result) {
             if (status_code == 200) {
-                Log.v("here sign in ", " <<<<<<<");
-                    Global.saveUserToPhone(result, getActivity());
-                    getActivity().startActivity(new Intent(getActivity(), MainActivity.class));
-                    super.onPostExecute(result);
+                Global.saveUserToPhone(result, getActivity());
+                Intent intent = new Intent(getActivity(), MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
 
             } else if (result.has("error")){
                 try {
@@ -197,7 +197,7 @@ public class SignInFragment extends Fragment implements View.OnClickListener {
             } else {
                 Toast.makeText(getActivity(), "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
             }
-//           emulator phone number 5555215554
+            super.onPostExecute(result);
 
         }
     }

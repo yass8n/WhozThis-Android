@@ -27,11 +27,14 @@ import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.client.Query;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.EventListener;
+import java.util.HashMap;
 import java.util.Map;
 
 public class MessagingActivity extends ActionBarActivity {
@@ -39,6 +42,7 @@ public class MessagingActivity extends ActionBarActivity {
     public static Activity activity;
     private static boolean is_in_front;
     private static EditText message_view;
+    private static HashMap<Integer, ChildEventListener> conversation_chats_set = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +77,7 @@ public class MessagingActivity extends ActionBarActivity {
     @Override
     public void onResume() {
         super.onResume();
+        setFireBaseChats();
         is_in_front = true;
         if (message_view != null){
             message_view.requestFocus();
@@ -106,87 +111,131 @@ public class MessagingActivity extends ActionBarActivity {
         fbaseAPI.execute(text_message.getText().toString());
         text_message.setText("");
     }
-    class ChatAdapter extends BaseAdapter {
-        ChatAdapter() {
+    private void setFireBaseChats() {
+        Firebase firebase = new Firebase(Global.FBASE_URL + "messages/" + MainActivity.current_conversation.id);
+        ChildEventListener listener = conversation_chats_set.get(MainActivity.current_conversation.id);
+        if (listener != null) {
+            firebase.removeEventListener(listener);
         }
-
-        class ChatViewHolder {
-            TextView eventListTextMessage;
-            ImageView event_list_text_image;
-            TextView event_list_time;
-            TextView number;
-        }
-
-        @Override
-        public int getCount() {
-            return MainActivity.current_conversation.messages.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return MainActivity.current_conversation.messages.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View chat = convertView;
-            // inject views
-            if (chat == null) {
-                LayoutInflater inflater = MessagingActivity.activity.getLayoutInflater();
-                chat = inflater.inflate(R.layout.event_chat_list_fragment, parent, false);
-                ChatViewHolder viewHolder = new ChatViewHolder();
-
-                // setting correct data
-                viewHolder.eventListTextMessage = (TextView) chat.findViewById(R.id.event_list_text_message);
-                viewHolder.event_list_text_image = (ImageView) chat.findViewById(R.id.event_list_text_image);
-                viewHolder.event_list_time = (TextView) chat.findViewById(R.id.event_list_time);
-                viewHolder.number = (TextView) chat.findViewById(R.id.number);
-                chat.setTag(viewHolder);
+        MainActivity.current_conversation.messages.clear();
+        ChildEventListener firebase_listener = new ChildEventListener() {
+            // Retrieve new posts as they are added to Firebase
+            @Override
+            public void onChildAdded(DataSnapshot snapshot, String previousChildKey) {
+                Map<String, Object> newPost = (Map<String, Object>) snapshot.getValue();
+                Message message = new Message();
+                message.comment = newPost.get("comment").toString();
+                message.timestamp = newPost.get("timestamp").toString();
+                message.fname = newPost.get("fname").toString();
+                message.user_id = newPost.get("user_id").toString();
+                message.fake_id = newPost.get("fake_id").toString();
+                message.color = newPost.get("color").toString();
+                MainActivity.current_conversation.messages.add(message);
+                chat_adapter.notifyDataSetChanged();
             }
 
-            ChatViewHolder holder = (ChatViewHolder) chat.getTag();
-            Message message = MainActivity.current_conversation.messages.get(position);
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
 
-            holder.eventListTextMessage.setText(message.comment);
+            }
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
 
-            String chat_time = convertChatDate(message.timestamp);
+            }
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
 
-            holder.event_list_time.setText(chat_time);
+            }
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
 
-            holder.number.setText(message.fake_id);
+            }
+        };
 
-            holder.event_list_text_image.setImageResource(Global.colorsMap.get(message.color));
+        firebase.addChildEventListener(firebase_listener);
+        conversation_chats_set.put(MainActivity.current_conversation.id, firebase_listener);
+    }
+}
+class ChatAdapter extends BaseAdapter {
+    ChatAdapter() {
+    }
 
-            return chat;
+    class ChatViewHolder {
+        TextView eventListTextMessage;
+        ImageView event_list_text_image;
+        TextView event_list_time;
+        TextView number;
+    }
+
+    @Override
+    public int getCount() {
+        return MainActivity.current_conversation.messages.size();
+    }
+
+    @Override
+    public Object getItem(int position) {
+        return MainActivity.current_conversation.messages.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        View chat = convertView;
+        // inject views
+        if (chat == null) {
+            LayoutInflater inflater = MessagingActivity.activity.getLayoutInflater();
+            chat = inflater.inflate(R.layout.event_chat_list_fragment, parent, false);
+            ChatViewHolder viewHolder = new ChatViewHolder();
+
+            // setting correct data
+            viewHolder.eventListTextMessage = (TextView) chat.findViewById(R.id.event_list_text_message);
+            viewHolder.event_list_text_image = (ImageView) chat.findViewById(R.id.event_list_text_image);
+            viewHolder.event_list_time = (TextView) chat.findViewById(R.id.event_list_time);
+            viewHolder.number = (TextView) chat.findViewById(R.id.number);
+            chat.setTag(viewHolder);
         }
 
-        private String convertChatDate(String timestamp) {
+        ChatViewHolder holder = (ChatViewHolder) chat.getTag();
+        Message message = MainActivity.current_conversation.messages.get(position);
 
-            // Remove the try catch after all old chats are gone
-            try {
-                Date date = new Date((long) Integer.parseInt(timestamp) * 1000);
-                Date today = new Date();
-                SimpleDateFormat compare_df = new SimpleDateFormat("M/d/yy");
-                Date date_compare = new Date(compare_df.format(date));
-                today = new Date(compare_df.format(today));
+        holder.eventListTextMessage.setText(message.comment);
 
-                if (today.equals(date_compare)) {
-                    SimpleDateFormat today_df = new SimpleDateFormat("h:mm a");
-                    return today_df.format(date);
-                } else {
-                    SimpleDateFormat df = new SimpleDateFormat("h:mm a M/d/yy");
-                    return df.format(date);
-                }
+        String chat_time = convertChatDate(message.timestamp);
 
-            } catch (Exception e) {
-                Log.v(e.toString(), "Error");
-                return timestamp;
+        holder.event_list_time.setText(chat_time);
+
+        holder.number.setText(message.fake_id);
+
+        holder.event_list_text_image.setImageResource(Global.colorsMap.get(message.color));
+
+        return chat;
+    }
+
+    private String convertChatDate(String timestamp) {
+
+        // Remove the try catch after all old chats are gone
+        try {
+            Date date = new Date((long) Integer.parseInt(timestamp) * 1000);
+            Date today = new Date();
+            SimpleDateFormat compare_df = new SimpleDateFormat("M/d/yy");
+            Date date_compare = new Date(compare_df.format(date));
+            today = new Date(compare_df.format(today));
+
+            if (today.equals(date_compare)) {
+                SimpleDateFormat today_df = new SimpleDateFormat("h:mm a");
+                return today_df.format(date);
+            } else {
+                SimpleDateFormat df = new SimpleDateFormat("h:mm a M/d/yy");
+                return df.format(date);
             }
+
+        } catch (Exception e) {
+            Log.v(e.toString(), "Error");
+            return timestamp;
         }
     }
 }

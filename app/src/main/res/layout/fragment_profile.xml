@@ -99,7 +99,7 @@
                 android:layout_marginBottom="130dp"
                 android:clickable="true"
                 android:scaleType="centerCrop"
-                android:src="@drawable/single_pic"
+                android:src="@drawable/single_icon"
                 app:riv_oval="true" />
 
         </RelativeLayout>

@@ -113,7 +113,9 @@ public class ProfileActivity extends ActionBarActivity {
             return true;
         } else if (id == R.id.sign_out) {
             getSharedPreferences("user", Context.MODE_PRIVATE).edit().clear().commit();
-            startActivity(new Intent(activity, WelcomeActivity.class));
+            Intent intent = new Intent(activity, WelcomeActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
@@ -211,7 +213,7 @@ public class ProfileActivity extends ActionBarActivity {
                         .load(WelcomeActivity.current_user.filename)
                         .into(profile_pic);
             } else {
-                profile_pic.setImageResource(R.drawable.single_pic);
+                profile_pic.setImageResource(R.drawable.single_icon);
             }
         }
         private void setBlockedProfilePics() {
@@ -229,7 +231,7 @@ public class ProfileActivity extends ActionBarActivity {
                             .load(person.filename)
                             .into(profile_pic);
                 } else {
-                    profile_pic.setImageResource(R.drawable.single_pic);
+                    profile_pic.setImageResource(R.drawable.single_icon);
                 }
                 profile_pics.addView(profile_pic_view);
 

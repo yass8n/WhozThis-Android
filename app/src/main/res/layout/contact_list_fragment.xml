@@ -29,7 +29,7 @@
                 android:layout_marginStart="3dp"
                 app:riv_border_width="1dip"
                 app:riv_border_color="@color/lighter_gray"
-                android:src="@drawable/single_pic"
+                android:src="@drawable/single_icon"
                 android:scaleType="centerCrop"
                 app:riv_oval="true"
                 android:cropToPadding="false" />

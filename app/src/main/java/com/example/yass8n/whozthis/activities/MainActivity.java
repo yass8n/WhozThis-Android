@@ -51,6 +51,7 @@ import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.client.Query;
 import com.firebase.client.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
@@ -88,7 +89,6 @@ import android.support.v4.widget.SwipeRefreshLayout;
 
 
 public class MainActivity extends ActionBarActivity implements View.OnClickListener, SwipeRefreshLayout.OnRefreshListener {
-    public static Firebase firebase;
     public static Context context;
     public static Set blocked_people = new LinkedHashSet();
     public static ArrayList<Conversation> conversations_array = new ArrayList<Conversation>();
@@ -102,7 +102,9 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     public static ConversationsAdapter conversatons_adapter;
     private SwipeRefreshLayout refreshLayout;
     private static boolean is_in_front;
-
+    private static int initial_number_of_contacts;
+    public static ChildEventListener current_conversation_listener;
+    private static boolean need_to_load_info;
     @Override
     public void onResume() {
         super.onResume();
@@ -124,9 +126,6 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        context = this;
-        Firebase.setAndroidContext(this);
-        firebase = new Firebase("https://radiant-inferno-906.firebaseio.com/");
         initializeVariables();
     }
     @Override
@@ -142,6 +141,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             loadContacts();
             refreshConversations();
         }
+        notifyAdapter();
         super.onStart();
     }
 
@@ -161,7 +161,9 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         int id = item.getItemId();
         if (id == R.id.sign_out) {
             getSharedPreferences("user", Context.MODE_PRIVATE).edit().clear().commit();
-            startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
+            Intent intent = new Intent(MainActivity.this, WelcomeActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
         } else if (id == R.id.edit_profile){
             startActivity(new Intent(MainActivity.this, ProfileActivity.class));
         }
@@ -173,7 +175,13 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             conversatons_adapter.notifyDataSetChanged();
         }
     }
-    public void initializeVariables() {
+    private void initializeVariables() {
+        context = this;
+        need_to_load_info = true;
+        setNumberOfContacts();
+        Firebase.setAndroidContext(this);
+        RelativeLayout start_up = (RelativeLayout)findViewById(R.id.start_up);
+        start_up.setVisibility(View.VISIBLE);
         RelativeLayout create_message = (RelativeLayout) findViewById(R.id.create_message);
         create_message.setOnClickListener(MainActivity.this);
         refreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
@@ -182,11 +190,20 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         conversations_list = (ListView) findViewById(R.id.conversations_scroll);
         conversations_list.setAdapter(conversatons_adapter);
     }
+    private void setNumberOfContacts(){
+        Cursor cursor =  managedQuery(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
+        initial_number_of_contacts = cursor.getCount();
+    }
+    private  int getNumberOfContacts(){
+        Cursor cursor =  managedQuery(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
+        return cursor.getCount();
+    }
     public void loadContacts(){
-//            if (loaded_info == false) {
-        getContactsTask runner = new getContactsTask();
-        runner.execute();
-//            }
+        int current_number_of_contacts = getNumberOfContacts();
+        if (initial_number_of_contacts != current_number_of_contacts || need_to_load_info) {
+            getContactsTask runner = new getContactsTask();
+            runner.execute();
+        }
     }
     private class getContactsTask extends AsyncTask<Void, String, String> {
         private int status_code;
@@ -237,8 +254,8 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
         @Override
         protected void onPostExecute(String result) {
-            UpdateFriendsAPI task = new UpdateFriendsAPI();
-            task.execute(phones);
+                UpdateFriendsAPI task = new UpdateFriendsAPI();
+                task.execute(phones);
         }
         private class UpdateFriendsAPI extends AsyncTask<ArrayList<String>, Void, JSONObject> {
 
@@ -444,11 +461,13 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                         JSONObject json_conversation = conversations.getJSONObject(i);
                         conversations_array.add(createConversation(json_conversation));
                     }
-                    setFireBaseChats();
+                    setFireBaseLastMessage();
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            conversatons_adapter.notifyDataSetChanged();
+                            notifyAdapter();
+                            RelativeLayout start_up = (RelativeLayout) findViewById(R.id.start_up);
+                            start_up.setVisibility(View.GONE);
                         }
                     }, 1000);
                 } catch (JSONException e) {
@@ -567,6 +586,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             } else {
                 Toast.makeText(context, "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
             }
+            need_to_load_info = false;
             super.onPostExecute(result);
         }
     }
@@ -574,7 +594,6 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     /**
      * A placeholder fragment containing a simple view.
      */
-
 
 
         @Override
@@ -643,14 +662,14 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 holder.date.setText(conversation.getDate());
                 holder.title.setText(conversation.title);
                 try {
-                    holder.last_message.setText(conversation.messages.get(conversation.messages.size() - 1).comment);
+                    holder.last_message.setText(conversation.last_message.comment);
                 }catch(Exception e){
                     holder.last_message.setText("");
                 }
                 final RelativeLayout image = (RelativeLayout) conversation_view.findViewById(R.id.users_modal);
                 ImageView modal_pic = (ImageView) image.findViewById(R.id.modal_pic);
                 if (conversation.users.size() > 2){
-                    modal_pic.setImageResource(R.drawable.group_pic);
+                    modal_pic.setImageResource(R.drawable.group_icon);
                     image.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -660,12 +679,22 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                     });
                 } else {
                     //if only 2 ppl in conversation, dont show the modal on click
-                    modal_pic.setImageResource(R.drawable.single_pic);
+                    //take to the new conversation instead
+                    image.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            current_conversation = conversation;
+                            current_conversation_listener = conversation_chats_set.get(conversation.id);
+                            startActivity(new Intent(MainActivity.this, MessagingActivity.class));
+                        }
+                    });
+                    modal_pic.setImageResource(R.drawable.single_icon);
                 }
                 conversation_view.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         current_conversation = conversation;
+                        current_conversation_listener = conversation_chats_set.get(conversation.id);
                         startActivity(new Intent(MainActivity.this, MessagingActivity.class));
                     }
                 });
@@ -705,7 +734,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                     @Override
                     public void onAnimationEnd(Animation arg0) {
                         conversations_array.remove(conversation);
-                        conversatons_adapter.notifyDataSetChanged();
+                        notifyAdapter();
                     }
                     @Override public void onAnimationRepeat(Animation animation) {}
                     @Override public void onAnimationStart(Animation animation) {
@@ -930,7 +959,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                                 .load(user.filename)
                                 .into(image);
                     } else {
-                        image.setImageResource(R.drawable.single_pic);
+                        image.setImageResource(R.drawable.single_icon);
                     }
                     return view;
                 }
@@ -938,18 +967,19 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
         }
 
-    public static void setFireBaseChats() {
+    public static void setFireBaseLastMessage() {
         for (int i = 0;i<conversations_array.size();i++) {
             final Conversation conversation = conversations_array.get(i);
 
-            Firebase firebase = new Firebase(Global.FBASE_URL + "messages/" + conversation.id);
+            final Firebase firebase = new Firebase(Global.FBASE_URL + "messages/" + conversation.id);
 
-            if (conversation_chats_set.get(conversation.id) != null) {
-                //if its already set, unset it
-                firebase.removeEventListener(conversation_chats_set.get(conversation.id));
-            }
-            conversation.messages.clear();
-            ChildEventListener firebase_listener = new ChildEventListener() {
+//            if (conversation_chats_set.get(conversation.id) != null) {
+//                //if its already set, unset it
+//                firebase.removeEventListener(conversation_chats_set.get(conversation.id));
+//            }
+//            conversation.messages.clear();
+            Query queryRef = firebase.limitToLast(1);
+            queryRef.addChildEventListener(new ChildEventListener() {
                 // Retrieve new posts as they are added to Firebase
                 @Override
                 public void onChildAdded(DataSnapshot snapshot, String previousChildKey) {
@@ -961,9 +991,8 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                         message.user_id = newPost.get("user_id").toString();
                         message.fake_id = newPost.get("fake_id").toString();
                         message.color = newPost.get("color").toString();
-                        conversation.messages.add(message);
-                        conversatons_adapter.notifyDataSetChanged();
-
+                        conversation.last_message = message;
+                        notifyAdapter();
                 }
 
                 @Override
@@ -982,11 +1011,9 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 public void onCancelled(FirebaseError firebaseError) {
 
                 }
-            };
+                // Retrieve new posts as they are added to Firebase
+            });
 
-            // Retrieve new posts as they are added to Firebase
-            firebase.addChildEventListener(firebase_listener);
-            conversation_chats_set.put(conversation.id, firebase_listener);
         }
     }
 

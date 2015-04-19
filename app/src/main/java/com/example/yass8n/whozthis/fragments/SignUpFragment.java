@@ -263,8 +263,9 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
             protected void onPostExecute(JSONObject result) {
                 if (status_code == 200) {
                     Global.saveUserToPhone(result, getActivity());
-                    getActivity().startActivity(new Intent(getActivity(), MainActivity.class));
-                    super.onPostExecute(result);
+                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
                 } else if (status_code == 422){
                     if (result.has("phone")){
                         try {
@@ -278,6 +279,8 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
                         Toast.makeText(getActivity(), "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
                     }
                 }
+                super.onPostExecute(result);
+
 //           emulator phone number 5555215554
             }
         }

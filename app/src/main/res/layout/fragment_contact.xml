@@ -110,7 +110,7 @@
                     android:layout_gravity="center"
                     android:layout_marginLeft="3dp"
                     android:layout_marginStart="3dp"
-                    android:src="@drawable/single_pic"
+                    android:src="@drawable/single_icon"
                     android:scaleType="centerCrop"
                     app:riv_oval="true"
                     android:cropToPadding="false" />
