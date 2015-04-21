@@ -468,6 +468,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                             notifyAdapter();
                             RelativeLayout start_up = (RelativeLayout) findViewById(R.id.start_up);
                             start_up.setVisibility(View.GONE);
+                            setNoMessagesNotice();
                         }
                     }, 1000);
                 } catch (JSONException e) {
@@ -476,7 +477,16 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             } else{
                 Toast.makeText(context, "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
             }
+
             super.onPostExecute(result);
+        }
+    }
+    private void setNoMessagesNotice(){
+        TextView no_messages = (TextView) findViewById(R.id.no_messages);
+        if (conversations_array.size() == 0){
+            no_messages.setVisibility(View.VISIBLE);
+        }else {
+            no_messages.setVisibility(View.GONE);
         }
     }
     public static Conversation createConversation(JSONObject json_conversation){
@@ -734,6 +744,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                     @Override
                     public void onAnimationEnd(Animation arg0) {
                         conversations_array.remove(conversation);
+                        setNoMessagesNotice();
                         notifyAdapter();
                     }
                     @Override public void onAnimationRepeat(Animation animation) {}
