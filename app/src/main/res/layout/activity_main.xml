@@ -20,18 +20,18 @@
         </ListView>
     </android.support.v4.widget.SwipeRefreshLayout>
     <RelativeLayout
-        android:layout_width="75dp"
-        android:layout_height="75dp"
+        android:layout_width="65dp"
+        android:layout_height="65dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="4dp"
         android:id="@+id/create_message"
         android:clickable="true"
         >
         <com.makeramen.RoundedImageView
             xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
+            android:layout_width="65dp"
+            android:layout_height="65dp"
             android:src="@color/app_green"
             android:scaleType="fitCenter"
             app:riv_mutate_background="true"
@@ -43,8 +43,8 @@
             android:layout_centerHorizontal="true"/>
         <com.makeramen.RoundedImageView
             xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:src="@drawable/create_message"
             android:scaleType="fitCenter"
             app:riv_mutate_background="true"

@@ -987,8 +987,6 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                         message.color = newPost.get("color").toString();
                         conversation.last_message = message;
                         notifyAdapter();
-                        //LEON: HERE IS WHERE THE WE KNOW THE USER RECEIVED A NEW
-                        // MESSAGE AND NOW WE NEED A NOTIFICATION
                 }
 
                 @Override
