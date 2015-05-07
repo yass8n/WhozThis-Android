@@ -235,11 +235,14 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
                             String phoneNo = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                             contact.phone = User.stripPhone(phoneNo);
-                            phones.add(contact.phone);
                             contact.first_name = name;
                             contact.first_letter = Character.toString(contact.first_name.charAt(0)).toUpperCase();
                             contact.filename = "";
-                            contacts_in_phone.add(contact);
+                            if (!contact.phone.equals(WelcomeActivity.current_user.phone)) {
+                                contacts_in_phone.add(contact);
+                                phones.add(contact.phone);
+                            }
+
 //                        }
 //                            pCur.close();
                         }
@@ -634,6 +637,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 TextView date;
                 TextView title;
                 TextView last_message;
+                ImageView bubble;
             }
 
             @Override
@@ -663,6 +667,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                     view_holder.date = (TextView) conversation_view.findViewById(R.id.date);
                     view_holder.title = (TextView) conversation_view.findViewById(R.id.title);
                     view_holder.last_message = (TextView) conversation_view.findViewById(R.id.last_message);
+                    view_holder.bubble = (ImageView) conversation_view.findViewById(R.id.bubble);
                     conversation_view.setTag(view_holder);
                 }
                 ConversationViewHolder holder = (ConversationViewHolder) conversation_view.getTag();
@@ -673,7 +678,12 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 holder.title.setText(conversation.title);
                 try {
                     holder.last_message.setText(conversation.last_message.comment);
-                }catch(Exception e){
+                    if (conversation.last_message.bubble) {
+                        holder.bubble.setVisibility(View.INVISIBLE);
+                    } else {
+                        holder.bubble.setVisibility(View.VISIBLE);
+                    }
+                }catch(Exception e) {
                     holder.last_message.setText("");
                 }
                 final RelativeLayout image = (RelativeLayout) conversation_view.findViewById(R.id.users_modal);
@@ -693,6 +703,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                     image.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
+//                            conversation.last_message.bubble = false;
                             current_conversation = conversation;
                             current_conversation_listener = conversation_chats_set.get(conversation.id);
                             startActivity(new Intent(MainActivity.this, MessagingActivity.class));
@@ -703,6 +714,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 conversation_view.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+//                        conversation.last_message.bubble = false;
                         current_conversation = conversation;
                         current_conversation_listener = conversation_chats_set.get(conversation.id);
                         startActivity(new Intent(MainActivity.this, MessagingActivity.class));
@@ -988,16 +1000,23 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 // Retrieve new posts as they are added to Firebase
                 @Override
                 public void onChildAdded(DataSnapshot snapshot, String previousChildKey) {
-                        Map<String, Object> newPost = (Map<String, Object>) snapshot.getValue();
-                        Message message = new Message();
-                        message.comment = newPost.get("comment").toString();
-                        message.timestamp = newPost.get("timestamp").toString();
-                        message.fname = newPost.get("fname").toString();
-                        message.user_id = newPost.get("user_id").toString();
-                        message.fake_id = newPost.get("fake_id").toString();
-                        message.color = newPost.get("color").toString();
-                        conversation.last_message = message;
-                        notifyAdapter();
+                    Map<String, Object> newPost = (Map<String, Object>) snapshot.getValue();
+                    Message message = new Message();
+                    message.comment = newPost.get("comment").toString();
+                    message.timestamp = newPost.get("timestamp").toString();
+                    message.fname = newPost.get("fname").toString();
+                    message.user_id = newPost.get("user_id").toString();
+                    message.fake_id = newPost.get("fake_id").toString();
+                    message.color = newPost.get("color").toString();
+                    try {
+                        message.bubble = Boolean.parseBoolean(newPost.get(Integer.toString(WelcomeActivity.current_user.user_id)).toString());
+                    }catch(Exception e){
+                        message.bubble = false;
+                        Global.setAsRead(Global.FBASE_URL + "messages/" + conversation.id, false);
+                    }
+                    message.key = snapshot.getKey();
+                    conversation.last_message = message;
+                    notifyAdapter();
                 }
 
                 @Override

@@ -11,4 +11,10 @@ public class Message {
     public String lname;
     public String timestamp;
     public String color;
+    public String key;
+    public boolean bubble;
+
+    public void Message(){
+        this.bubble=false;
+    }
 }

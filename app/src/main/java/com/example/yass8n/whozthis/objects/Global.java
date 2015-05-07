@@ -22,7 +22,12 @@ import com.example.yass8n.whozthis.R;
 import com.example.yass8n.whozthis.activities.MainActivity;
 import com.example.yass8n.whozthis.activities.MessagingActivity;
 import com.example.yass8n.whozthis.activities.WelcomeActivity;
+import com.firebase.client.ChildEventListener;
+import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.Query;
+import com.firebase.client.ValueEventListener;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -133,7 +138,7 @@ public class Global extends Application {
         public String doInBackground(String... s) {
             String user_comment = s[0];
 
-            Map<String, String> post = new HashMap<>();
+            Map<String, Object> post = new HashMap<>();
             Calendar calendar = Calendar.getInstance();
             java.util.Date now = calendar.getTime();
             long unixTime = System.currentTimeMillis() / 1000L;
@@ -152,8 +157,16 @@ public class Global extends Application {
             post.put("fake_id", Integer.toString(MainActivity.current_conversation.users.get(i).fake_id));
             post.put("title", MainActivity.current_conversation.title);
             post.put("comment", user_comment);
-
-            Firebase firebase = new Firebase(Global.FBASE_URL + "messages/" + MainActivity.current_conversation.id);
+            for (int j = 0; j < MainActivity.current_conversation.users.size(); j ++){
+                //if false, indicates that they have not seen the message yet
+                User user = MainActivity.current_conversation.users.get(j);
+                if (user.user_id == WelcomeActivity.current_user.user_id) {
+                    post.put(Integer.toString(MainActivity.current_conversation.users.get(j).user_id), true);
+                }else {
+                    post.put(Integer.toString(MainActivity.current_conversation.users.get(j).user_id), false);
+                }
+            }
+            Firebase firebase = new Firebase(FBASE_URL + "messages/" + MainActivity.current_conversation.id);
             firebase.push().setValue(post);
             return "";
         }
@@ -163,5 +176,47 @@ public class Global extends Application {
             MessagingActivity.notifyAdapter();
             MainActivity.notifyAdapter();
         }
+    }
+    public static void setAsRead(final String url, final boolean bool){
+        final Firebase firebase = new Firebase(url);
+        Query queryRef = firebase.limitToLast(1);
+        queryRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot snapshot, String previousChildKey) {
+                Map<String, Object> newPost = (Map<String, Object>) snapshot.getValue();
+                Message message = new Message();
+                message.key = snapshot.getKey();
+                final Firebase last_message = new Firebase(url + "/" + message.key);
+                firebase.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+                        Map<String, Object> updates = new HashMap<String, Object>();
+                        updates.put(Integer.toString(WelcomeActivity.current_user.user_id), bool);
+                        last_message.updateChildren(updates);
+                    }
+                    @Override
+                    public void onCancelled(FirebaseError firebaseError) {
+                    }
+                });
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+            // Retrieve new posts as they are added to Firebase
+        });
     }
 }

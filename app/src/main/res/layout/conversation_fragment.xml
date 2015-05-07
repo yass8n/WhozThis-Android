@@ -72,18 +72,36 @@
                 android:layout_height="match_parent"
                 android:id="@+id/last_message"
                 android:text="last message"
+                android:lines="1"
                 android:textSize="14sp"
+                android:layout_marginRight="20dp"
                 />
             <ImageView
                 android:layout_width="18dp"
                 android:layout_height="18dp"
                 android:id="@+id/delete"
                 android:background="@drawable/trash"
-                android:layout_alignEnd="@+id/last_message"
-                android:layout_alignRight="@+id/last_message"
                 android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
                 />
         </RelativeLayout>
+        <com.makeramen.RoundedImageView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:visibility="invisible"
+            android:layout_width="11dp"
+            android:layout_height="11dp"
+            android:id="@+id/bubble"
+            android:src="@color/light_orange"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="3dp"
+            app:riv_oval="true"
+            app:riv_corner_radius="30dip"
+            android:scaleType="fitCenter"
+            />
     </RelativeLayout>
 
 </LinearLayout>

@@ -212,7 +212,6 @@ public class NewMessages extends ActionBarActivity {
                 }
                 sb.append("]");sb.append('}');
                 String params = sb.toString();
-                Log.v(params.toString(), " <PARAMS");
                 httpPost.setEntity(new StringEntity(params));
 
                 HttpResponse response = httpClient.execute(httpPost, localContext);
@@ -256,8 +255,6 @@ public class NewMessages extends ActionBarActivity {
 
         @Override
         protected void onPostExecute(JSONObject result) {
-            Global.log(result.toString(), " <<<<<<<<<");
-
             if (status_code == 200) {
                 try {
                     JSONArray conversations = new JSONArray(result.getString("conversations"));

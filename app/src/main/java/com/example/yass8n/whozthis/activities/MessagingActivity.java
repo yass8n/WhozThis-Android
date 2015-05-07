@@ -18,6 +18,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.yass8n.whozthis.R;
 import com.example.yass8n.whozthis.objects.Conversation;
@@ -28,6 +29,7 @@ import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.Query;
+import com.firebase.client.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
@@ -40,7 +42,7 @@ import java.util.Map;
 public class MessagingActivity extends ActionBarActivity {
     private static ChatAdapter chat_adapter;
     public static Activity activity;
-    private static boolean is_in_front;
+    public static boolean is_in_front;
     private static EditText message_view;
     private static HashMap<Integer, ChildEventListener> conversation_chats_set = new HashMap<>();
 
@@ -78,6 +80,7 @@ public class MessagingActivity extends ActionBarActivity {
     public void onResume() {
         super.onResume();
         setFireBaseChats();
+        Global.setAsRead(Global.FBASE_URL + "messages/" + MainActivity.current_conversation.id, true);
         is_in_front = true;
         if (message_view != null){
             message_view.requestFocus();
@@ -111,6 +114,7 @@ public class MessagingActivity extends ActionBarActivity {
         fbaseAPI.execute(text_message.getText().toString());
         text_message.setText("");
     }
+
     private void setFireBaseChats() {
         Firebase firebase = new Firebase(Global.FBASE_URL + "messages/" + MainActivity.current_conversation.id);
         ChildEventListener listener = conversation_chats_set.get(MainActivity.current_conversation.id);
@@ -130,6 +134,7 @@ public class MessagingActivity extends ActionBarActivity {
                 message.user_id = newPost.get("user_id").toString();
                 message.fake_id = newPost.get("fake_id").toString();
                 message.color = newPost.get("color").toString();
+                message.bubble = true;
                 MainActivity.current_conversation.messages.add(message);
                 chat_adapter.notifyDataSetChanged();
             }
