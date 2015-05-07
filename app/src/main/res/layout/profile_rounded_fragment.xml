@@ -9,8 +9,8 @@
     >
 
     <com.makeramen.RoundedImageView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
         android:id="@+id/profile_pic"
         android:src="@drawable/single_icon"
         android:clickable="true"

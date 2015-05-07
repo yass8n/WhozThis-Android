@@ -30,8 +30,8 @@
         >
         <com.makeramen.RoundedImageView
             xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:layout_width="65dp"
-            android:layout_height="65dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
             android:src="@color/app_green"
             android:scaleType="fitCenter"
             app:riv_mutate_background="true"
@@ -43,8 +43,8 @@
             android:layout_centerHorizontal="true"/>
         <com.makeramen.RoundedImageView
             xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:src="@drawable/create_message"
             android:scaleType="fitCenter"
             app:riv_mutate_background="true"

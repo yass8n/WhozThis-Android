@@ -116,7 +116,7 @@ public class NewMessages extends ActionBarActivity {
        selected_people = new LinkedHashSet();
     }
 
-    public void sendConvo(View view) {
+    public void sendText(View view) {
         if (first_text_mess.getText().length() == 0){
             Toast.makeText(activity, "You must write something in your message.", Toast.LENGTH_SHORT).show();
         } else if (selected_people.size() == 0){
