@@ -134,7 +134,7 @@ public class MessagingActivity extends ActionBarActivity {
                 message.user_id = newPost.get("user_id").toString();
                 message.fake_id = newPost.get("fake_id").toString();
                 message.color = newPost.get("color").toString();
-                message.bubble = true;
+                message.seen = true;
                 MainActivity.current_conversation.messages.add(message);
                 chat_adapter.notifyDataSetChanged();
             }

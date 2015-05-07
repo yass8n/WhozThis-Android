@@ -12,9 +12,9 @@ public class Message {
     public String timestamp;
     public String color;
     public String key;
-    public boolean bubble;
+    public boolean seen;
 
     public void Message(){
-        this.bubble=false;
+        this.seen=false;
     }
 }

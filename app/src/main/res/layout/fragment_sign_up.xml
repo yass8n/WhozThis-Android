@@ -13,7 +13,7 @@
         android:textStyle="bold"
         android:gravity="center|top"
         android:layout_marginTop="15dp"
-        android:layout_marginBottom="25dp"
+        android:layout_marginBottom="15dp"
         android:textColor="@color/dark_gray"
         />
 
@@ -30,13 +30,13 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="135dp"
+        android:layout_height="100dp"
         >
 
         <com.makeramen.RoundedImageView
             xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:layout_width="125dp"
-            android:layout_height="125dp"
+            android:layout_width="85dp"
+            android:layout_height="85dp"
             android:scaleType="fitCenter"
             android:src="@drawable/white"
             android:clickable="true"
@@ -47,8 +47,8 @@
 
         <com.makeramen.RoundedImageView
             xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:src="@drawable/single_icon"
             android:scaleType="centerCrop"
             app:riv_oval="true"
@@ -77,7 +77,7 @@
 
         <EditText
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="40dp"
             android:inputType="textPersonName"
             android:hint="First name"
             android:ems="10"
@@ -87,7 +87,7 @@
 
         <EditText
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="40dp"
             android:inputType="textPersonName"
             android:id="@+id/last_name"
             android:hint="Last name"
@@ -96,7 +96,7 @@
 
         <EditText
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="40dp"
             android:id="@+id/phone"
             android:inputType="phone"
             android:hint="@string/phone_number"
@@ -106,7 +106,7 @@
             />
         <EditText
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="40dp"
             android:id="@+id/password"
             android:inputType="textPassword"
             android:hint="@string/password"

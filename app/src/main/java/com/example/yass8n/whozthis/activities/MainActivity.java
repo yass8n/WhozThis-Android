@@ -678,7 +678,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 holder.title.setText(conversation.title);
                 try {
                     holder.last_message.setText(conversation.last_message.comment);
-                    if (conversation.last_message.bubble) {
+                    if (conversation.last_message.seen) {
                         holder.bubble.setVisibility(View.INVISIBLE);
                     } else {
                         holder.bubble.setVisibility(View.VISIBLE);
@@ -703,7 +703,6 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                     image.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-//                            conversation.last_message.bubble = false;
                             current_conversation = conversation;
                             current_conversation_listener = conversation_chats_set.get(conversation.id);
                             startActivity(new Intent(MainActivity.this, MessagingActivity.class));
@@ -714,7 +713,6 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 conversation_view.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-//                        conversation.last_message.bubble = false;
                         current_conversation = conversation;
                         current_conversation_listener = conversation_chats_set.get(conversation.id);
                         startActivity(new Intent(MainActivity.this, MessagingActivity.class));
@@ -1009,9 +1007,9 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                     message.fake_id = newPost.get("fake_id").toString();
                     message.color = newPost.get("color").toString();
                     try {
-                        message.bubble = Boolean.parseBoolean(newPost.get(Integer.toString(WelcomeActivity.current_user.user_id)).toString());
+                        message.seen = Boolean.parseBoolean(newPost.get(Integer.toString(WelcomeActivity.current_user.user_id)).toString());
                     }catch(Exception e){
-                        message.bubble = false;
+                        message.seen = false;
                         Global.setAsRead(Global.FBASE_URL + "messages/" + conversation.id, false);
                     }
                     message.key = snapshot.getKey();
