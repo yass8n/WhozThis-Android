@@ -180,10 +180,9 @@ public class Global extends Application {
     public static void setAsRead(final String url, final boolean bool){
         final Firebase firebase = new Firebase(url);
         Query queryRef = firebase.limitToLast(1);
-        queryRef.addChildEventListener(new ChildEventListener() {
+        ChildEventListener listener = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot snapshot, String previousChildKey) {
-                Map<String, Object> newPost = (Map<String, Object>) snapshot.getValue();
                 Message message = new Message();
                 message.key = snapshot.getKey();
                 final Firebase last_message = new Firebase(url + "/" + message.key);
@@ -217,6 +216,10 @@ public class Global extends Application {
 
             }
             // Retrieve new posts as they are added to Firebase
-        });
+        };
+        queryRef.addChildEventListener(listener);
+        if (listener != null) {
+            firebase.removeEventListener(listener);
+        }
     }
 }

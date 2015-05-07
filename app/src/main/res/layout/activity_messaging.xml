@@ -10,7 +10,7 @@
             android:layout_weight="1"
             android:id="@+id/event_chat_list"
             android:layout_alignParentTop="true"
-            android:transcriptMode="normal"
+            android:transcriptMode="alwaysScroll"
             android:layout_above="@+id/text_input"
             >
         </ListView>

@@ -3,6 +3,8 @@ package com.example.yass8n.whozthis.activities;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,6 +19,7 @@ import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,6 +27,7 @@ import com.example.yass8n.whozthis.R;
 import com.example.yass8n.whozthis.objects.Conversation;
 import com.example.yass8n.whozthis.objects.Global;
 import com.example.yass8n.whozthis.objects.Message;
+import com.example.yass8n.whozthis.objects.User;
 import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
@@ -32,11 +36,30 @@ import com.firebase.client.Query;
 import com.firebase.client.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.EventListener;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 public class MessagingActivity extends ActionBarActivity {
@@ -110,9 +133,88 @@ public class MessagingActivity extends ActionBarActivity {
 
     public void sendText(View view) {
         EditText text_message = (EditText) findViewById(R.id.text_mess);
-        Global.SendFireBaseMessage fbaseAPI = new Global.SendFireBaseMessage();
-        fbaseAPI.execute(text_message.getText().toString());
+        new UpdateConversationTask(text_message.getText().toString()).execute();
         text_message.setText("");
+    }
+    private class UpdateConversationTask extends AsyncTask<String, Void, JSONObject> {
+        private int status_code;
+        String text_message;
+        UpdateConversationTask(String string){
+            this.text_message = string;
+        }
+        @Override
+        protected void onPreExecute() {
+        }
+
+        @Override
+        protected JSONObject doInBackground(String... s) {
+            InputStream inputStream = null;
+            String result = null;
+            JSONObject jObject = null;
+
+            try {
+
+                HttpClient httpClient = new DefaultHttpClient();
+                HttpContext localContext = new BasicHttpContext();
+                HttpPut httpPut = new HttpPut(Global.AWS_URL + "v1/conversations/" + MainActivity.current_conversation.id);
+
+                httpPut.setHeader("Accept", "application/json");
+                httpPut.setHeader("Content-type", "application/json");
+
+                StringBuilder sb = new StringBuilder();
+                sb.append("{");sb.append('"');sb.append("conversation");sb.append('"');sb.append(":");
+                sb.append("{");sb.append('"');sb.append("title");sb.append('"');sb.append(":");
+                sb.append('"');sb.append(MainActivity.current_conversation.title);sb.append('"');sb.append('}');sb.append('}');
+
+                String params = sb.toString();
+                httpPut.setEntity(new StringEntity(params));
+
+                HttpResponse response = httpClient.execute(httpPut, localContext);
+                status_code = response.getStatusLine().getStatusCode();
+                HttpEntity response_entity = response.getEntity();
+
+                inputStream = response_entity.getContent();
+
+                // json is UTF-8 by default
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+                sb = new StringBuilder();
+
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line + "\n");
+                }
+
+                result = sb.toString();
+                // write response to log
+                jObject = new JSONObject(result);
+
+            } catch (ClientProtocolException e) {
+                // Log exception
+                Log.v("CLIENT", "ERROR");
+
+                e.printStackTrace();
+            } catch (IOException e) {
+                // Log exception
+                Log.v("IOE", "ERROR");
+
+                e.printStackTrace();
+            } catch (JSONException e) {
+                Log.v("JSON", "ERROR");
+
+                e.printStackTrace();
+            }
+            return jObject;
+        }
+        @Override
+        protected void onPostExecute(JSONObject result) {
+            if (status_code == 200) {
+                Global.SendFireBaseMessage fbaseAPI = new Global.SendFireBaseMessage();
+                fbaseAPI.execute(this.text_message);
+            } else{
+                Toast.makeText(MessagingActivity.activity, "Error! Please make sure you have a stable internet connection.", Toast.LENGTH_LONG).show();
+            }
+            super.onPostExecute(result);
+        }
     }
 
     private void setFireBaseChats() {
