@@ -68,6 +68,7 @@ public class MessagingActivity extends ActionBarActivity {
     public static boolean is_in_front;
     private static EditText message_view;
     private static HashMap<Integer, ChildEventListener> conversation_chats_set = new HashMap<>();
+    private ListView chat_list;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,6 +129,7 @@ public class MessagingActivity extends ActionBarActivity {
         chat_adapter = new ChatAdapter();
         ListView messages_list_view = (ListView) findViewById(R.id.event_chat_list);
         messages_list_view.setAdapter(chat_adapter);
+        chat_list = (ListView) findViewById(R.id.event_chat_list);
         chat_adapter.notifyDataSetChanged();
     }
 
@@ -239,6 +241,7 @@ public class MessagingActivity extends ActionBarActivity {
                 message.seen = true;
                 MainActivity.current_conversation.messages.add(message);
                 chat_adapter.notifyDataSetChanged();
+                chat_list.smoothScrollToPosition(chat_adapter.getCount());
             }
 
             @Override
